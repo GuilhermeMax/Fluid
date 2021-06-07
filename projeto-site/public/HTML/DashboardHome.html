@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital@1&display=swap" rel="stylesheet">
+    <title>Dashboard - Fluid</title>
+    <link rel="stylesheet" href="../CSS/Navbar.css">
+    <link rel="stylesheet" href="../CSS/DashboardHome.css">
+    <script type="text/javascript" src="../funcoes.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+</head>
+<script>
+    window.onload = verificar_autenticacao();
+</script>
+<body onload="verificar_autenticacao()">
+    <div class="container">
+        <div class="navbar">
+            <div class="logo">
+                <img src="../ASSETS/Fluid-Icon.png">
+                <h1>FLUID</h1>
+            </div>
+
+            <div class="usuario-info">
+                <img src="../ASSETS/user.png" alt="">
+                <h3><b id="b_usuario">Usuário</b></h3>
+
+            </div>
+
+            <ul>
+                <li><a href="#"><button><i class="fas fa-home"></i>Home</button></a></li>
+                <li id="cadastrar"><a href="DashboardCadastro.html"><button><i class="fas fa-user-plus"></i>Cadastrar</button></a></li>
+                <li><a href="DashboardMaquinas.html"><button><i class="fas fa-chart-bar"></i>Dashboard</button></a></li>                
+                <li><a href="#"><button><i class="far fa-user"></i>Perfil</button></a></li>
+                <li><button onclick="logoff()"><i class="far fa-times-circle"></i>Sair</button></li>
+            </ul>
+        </div>
+
+
+        <div class="div-aux"></div>
+
+        <div class="main">
+
+            <h1 class="titulo">Home</h1>
+
+            <div class="container-searchbar">
+                <h3>Buscar máquina:</h3>
+                <input type="text" placeholder="Hostname">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+
+            <div class="container-computer-cards" id="cards" onload="mapearComputadores()">
+
+            </div>
+
+        </div>
+
+
+
+
+    </div>
+
+</body>
+
+</html>
+<script>
+    var tipoUsuario = sessionStorage.tipo_usuario_meuapp;
+    
+    if(tipoUsuario == 2) {
+        cadastrar.style.display = "none";
+    }
+
+    mapearComputadores();
+
+    function mapearComputadores() {
+        //aguardar();
+        fetch(`/usuarios/listarComputadores`)
+            .then(resposta => {
+
+                if (resposta.ok) {
+                    resposta.json().then(function (resposta) {
+
+                        for (var aux = 0; aux < resposta.length; aux++){
+                            var hostname = resposta[aux].hostname;
+                            var computador = resposta[aux].id;
+                            criarCard(hostname, computador);
+                        }
+                    });
+                } else {
+
+                    console.error('Nenhum dado encontrado ou erro na API');
+                }
+            })
+            .catch(function (error) {
+                console.error(`Erro na obtenção dos dados do setor p/ gráfico: ${error.message}`);
+            });
+    }
+
+    function criarCard(hostname, fkComputador) {
+        fetch(`/usuarios/listarDadosDisco/${fkComputador}`).then(resposta => {
+            
+            if (resposta.ok) {
+                resposta.json().then(function (resposta) {
+
+                var dadosDisco = resposta;
+                //Cria label do Hostname ${hostname}
+                //Label Disco 1 => recebe dadosDisco[0].usoEmPorcentagem
+
+                // if (possuiCPU(fkComputador) == undefined) {
+                //     if (dadosDisco[0].hardware != dadosDisco[2].hardware && dadosDisco[0].hardware != dadosDisco[1].hardware){
+                //         //Label Disco 3 => recebe dadosDisco[2].usoEmPorcentagem
+                //         cards.innerHTML += `<div class="computer-card">
+                //         <div class="faixa" style="background-color: red"></div>
+                    
+                //             <img src="../ASSETS/desktop-computer.png" alt="">
+                        
+                //             <h3 id="hostname" name="hostname">${hostname}</h3>
+                            
+                //             <ul>
+                //                 <li>Espaço Ocupado:</li>
+                //                 <li>Disco 1 - ${dadosDisco[0].usoEmPorcentagem}%</li>
+                //                 <li>Disco 2 - ${dadosDisco[1].usoEmPorcentagem}%</li>
+                //                 <li>Disco 3 - ${dadosDisco[2].usoEmPorcentagem}%</li>
+                //             </ul>
+
+                //         </div>`;
+                //     }
+                //     else if (dadosDisco[1].hardware != dadosDisco[2].hardware){
+                //         //Label Disco 2 => recebe dadosDisco[1].usoEmPorcentagem
+                //         cards.innerHTML += `<div class="computer-card">
+                //         <div class="faixa" style="background-color: red"></div>
+                    
+                //             <img src="../ASSETS/desktop-computer.png" alt="">
+                        
+                //             <h3 id="hostname" name="hostname">${hostname}</h3>
+                            
+                //             <ul>
+                //                 <li>Espaço Ocupado:</li>
+                //                 <li>Disco 1 - ${dadosDisco[1].usoEmPorcentagem}%</li>
+                //                 <li>Disco 2 - ${dadosDisco[2].usoEmPorcentagem}%</li>
+                //             </ul>
+
+                //         </div>`;
+                //     }
+                //     else {
+                //         cards.innerHTML += `<div class="computer-card">
+                //     <div class="faixa" style="background-color: red"></div>
+                    
+                //             <img src="../ASSETS/desktop-computer.png" alt="">
+                        
+                //             <h3 id="hostname" name="hostname">${hostname}</h3>
+                            
+                //             <ul>
+                //                 <li>Espaço Ocupado:</li>
+                //                 <li>Disco 1 - ${dadosDisco[2].usoEmPorcentagem}%</li>
+                //             </ul>
+
+                //     </div>`;
+                //     }
+                // }
+                // else {
+                    if (dadosDisco[0].hardware != dadosDisco[2].hardware && dadosDisco[0].hardware != dadosDisco[1].hardware){
+                        //Label Disco 3 => recebe dadosDisco[2].usoEmPorcentagem
+                        cards.innerHTML += `<div class="computer-card">
+                        <div class="faixa" id="faixa"></div>
+                    
+                            <img src="../ASSETS/desktop-computer.png" alt="">
+                        
+                            <h3 id="hostname" name="hostname">${hostname}</h3>
+                            
+                            <ul>
+                                <li>Espaço Ocupado:</li>
+                                <li>Disco 1 - ${dadosDisco[0].usoEmPorcentagem}%</li>
+                                <li>Disco 2 - ${dadosDisco[1].usoEmPorcentagem}%</li>
+                                <li>Disco 3 - ${dadosDisco[2].usoEmPorcentagem}%</li>
+                            </ul>
+
+                        </div>`;
+                    }
+                    else if (dadosDisco[1].hardware != dadosDisco[2].hardware){
+                        //Label Disco 2 => recebe dadosDisco[1].usoEmPorcentagem
+                        cards.innerHTML += `<div class="computer-card">
+                        <div class="faixa" id="faixa"></div>
+                    
+                            <img src="../ASSETS/desktop-computer.png" alt="">
+                        
+                            <h3 id="hostname" name="hostname">${hostname}</h3>
+                            
+                            <ul>
+                                <li>Espaço Ocupado:</li>
+                                <li>Disco 1 - ${dadosDisco[1].usoEmPorcentagem}%</li>
+                                <li>Disco 2 - ${dadosDisco[2].usoEmPorcentagem}%</li>
+                            </ul>
+
+                        </div>`;
+                    }
+                    else {
+                        cards.innerHTML += `<div class="computer-card">
+                    <div class="faixa" id="faixa"></div>
+                    
+                            <img src="../ASSETS/desktop-computer.png" alt="">
+                        
+                            <h3 id="hostname" name="hostname">${hostname}</h3>
+                            
+                            <ul>
+                                <li>Espaço Ocupado:</li>
+                                <li>Disco 1 - ${dadosDisco[2].usoEmPorcentagem}%</li>
+                            </ul>
+
+                    </div>`;
+                    }
+                //}
+
+            });
+
+	        }
+        });
+    }
+
+    function possuiCPU(fkComputador) {
+        fetch(`/usuarios/procurarCPU/${fkComputador}`).then(resposta => {
+            if (resposta.ok) {
+                resposta.json().then(function (resposta) {
+                    
+                    return resposta.length;
+
+                });
+            }
+        });
+    }
+
+</script>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <script src="https://www.chartjs.org/dist/2.9.3/Chart.min.js"></script>
+    <script src="https://www.chartjs.org/samples/latest/utils.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital@1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" crossorigin="anonymous">
+    <title>Dashboard - FLUID</title>
+    <link rel="stylesheet" href="../CSS/Navbar.css">
+    <link rel="stylesheet" href="../CSS/Dashboard.css">
+</head>
+
+<body>
+
+    <!--NAV-->
+    <div class="container">
+        <!-- <div class="navbar"> -->
+
+            <div class="navbar">
+                <div class="logo">
+                    <img src="../ASSETS/Fluid-Icon.png">
+                    <h1>FLUID</h1>
+                </div>
+
+                <div class="usuario-info">
+                    <img src="../ASSETS/user.png" alt="">
+                    <h3>Usuário</h3>
+
+                </div>
+                
+                <ul>
+                    <li><button onclick="home()"><i class="fas fa-home"></i>Home</button></li>            
+                    <li><button onclick="cadastrar()"><i class="fas fa-user-plus"></i>Cadastrar</button></li>
+                    <li><button onclick="dashboard()"><i class="fas fa-chart-bar"></i>Dashboard</button></li>
+                    <li><button onclick="perfil()"><i class="far fa-user"></i>Perfil</button></li>
+                    <li><button onclick="sair()"><i class="far fa-times-circle"></i>Sair</button></li>
+                </ul>
+            </div>
+
+        <!-- </div>  -->
+
+        <div class="div-aux"></div>
+
+        <div class="dash">
+            
+
+            <div class="graficos" id="graficos" style="display: block;">
+
+                <div class="titulo">
+                    <h1>Dashboard</h1>
+                </div>
+
+                <div class="contGrafico">
+
+                    <div class="colunas">
+                        
+                        <!-- <div class="buscar-maquina">
+                            <h3>Selecione uma máquina</h3>
+                            
+                            <input type="text">
+                            <button>buscar</button>
+
+
+                        </div> -->
+
+                        <div class="valores">
+                            <div class="grafico1">
+                                <div class="primeiro">
+                                    <canvas id="graficoGPU"></canvas>
+                                </div>
+
+
+                            </div>
+                            <div class="coluna_1">
+                                <div class="resultado">
+                                    <p>Máximo atingido:</p>
+                                    <p><b id="max_TempGPU">0</b>ºC</p>
+                                </div>
+                                <div class="resultado">
+                                    <p>Média da temperatura:</p>
+                                    <p><b id="media_TempGPU">0</b>ºC</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="valores">
+                            <div class="grafico2">
+                                <div class='segundo'>
+                                    <canvas id='graficoRAM'></canvas>
+                                </div>
+
+                            </div>
+                            <div class="coluna_2">
+                                <div class="resultado">
+                                    <p>Máximo atingido:</p>
+                                    <p><b id="max_usoRAM">0</b>%</p>
+                                </div>
+                                <div class="resultado">
+                                    <p>Média da uso:</p>
+                                    <p><b id="media_usoRAM">0</b>%</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="valores">
+                            <div class="grafico3">
+                                <div class="terceiro">
+                                    <canvas id="graficoCPU"></canvas>
+                                </div>
+
+                            </div>
+                            <div class="coluna_3">
+                                <div class="resultado">
+                                    <p>Máximo atingido:</p>
+                                    <p><b id="max_usoCPU">0</b>%</p>
+                                </div>
+                                <div class="resultado">
+                                    <p>Média de uso:</p>
+                                    <p><b id="media_usoCPU">0</b>%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</body>
+
+</html>
+
+<script>
+
+    function dashboard() {
+        document.getElementById("graficos").style.display = "block";
+    }
+
+    // Funções gráficos
+
+    // Temp GPU
+    var config_tempGPU = {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Temperatura',
+                backgroundColor: 'red',
+                borderColor: 'red',
+                data: [],
+                fill: true,
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Gráfico de histórico de temperatura da GPU'
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Horário da Leitura'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'ºC'
+                    }
+                }]
+            }
+        }
+    };
+    //uso RAM
+    var config_usoRAM = {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Uso de memória RAM',
+                backgroundColor: 'rgb(36, 119, 226)',
+                borderColor: 'rgb(36, 119, 226)',
+                data: [],
+                fill: true,
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Gráfico de histórico de % de uso de RAM'
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Horário da Leitura'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: '% de uso'
+                    }
+                }]
+            }
+        }
+    };
+    //uso CPU
+    var config_usoCPU = {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: '% de uso da CPU',
+                backgroundColor: '#03fc94',
+                borderColor: '#03fc94',
+                data: [],
+                fill: true,
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Gráfico de histórico de % de uso da CPU'
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Horário da Leitura'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: '% de uso'
+                    }
+                }]
+            }
+        }
+    };
+
+    //Temp
+    function sortearTemperatura() {
+        var limiteMin = 30;
+        var limiteMax = 80;
+        // var minimoAbsoluto = Math.abs(limiteMin);
+        return (Math.random() * (limiteMax - limiteMin) + limiteMin).toFixed(1);
+    }
+
+
+    function recuperarDadosIniciais_usoRAM() {
+
+        // esse "registros" será recuperado do backend futuramente
+        var registros = [
+            {
+                momento: '00:03:42',
+                leitura: sortearTemperatura()
+            },
+            {
+                momento: '00:03:52',
+                leitura: sortearTemperatura()
+            },
+            {
+                momento: '00:04:02',
+                leitura: sortearTemperatura()
+            },
+            {
+                momento: '00:04:12',
+                leitura: sortearTemperatura()
+            },
+            {
+                momento: '00:04:22',
+                leitura: sortearTemperatura()
+            },
+            {
+                momento: '00:04:32',
+                leitura: sortearTemperatura()
+            },
+            {
+                momento: '00:04:42',
+                leitura: sortearTemperatura()
+            }
+        ];
+
+        var contador = 0;
+
+        // registros.length é a quantidade de itens em "registros"
+        while (contador < registros.length) {
+
+            config_usoRAM.data.labels.push(registros[contador].momento);  // incluir um novo momento
+            config_usoRAM.data.datasets[0].data.push(registros[contador].leitura);  // incluir uma nova leitura
+
+            contador++;
+        }
+
+    }
+
+    //uso RAM
+    function sortearUsoRAM() {
+        min = 10;
+        max = 99;
+
+        let random = Math.floor(Math.random() * (max - min + 1) + min);
+
+        return random
+    }
+
+     //uso CPU
+     function sortearUsoCPU() {
+        min = 10;
+        max = 99;
+
+        let random = Math.floor(Math.random() * (max - min + 1) + min);
+
+        return random
+    }
+
+    function recuperarDadosIniciais_tempGPU() {
+
+        // esse "registros" será recuperado do backend futuramente
+        var registros = [
+            {
+                momento: '00:03:42',
+                leitura: sortearTemperatura()
+            },
+            {
+                momento: '00:03:52',
+                leitura: sortearTemperatura()
+            },
+            {
+                momento: '00:04:02',
+                leitura: sortearTemperatura()
+            },
+            {
+                momento: '00:04:12',
+                leitura: sortearTemperatura()
+            },
+            {
+                momento: '00:04:22',
+                leitura: sortearTemperatura()
+            },
+            {
+                momento: '00:04:32',
+                leitura: sortearTemperatura()
+            },
+            {
+                momento: '00:04:42',
+                leitura: sortearTemperatura()
+            }
+        ];
+
+        var contador = 0;
+
+        // registros.length é a quantidade de itens em "registros"
+        while (contador < registros.length) {
+
+            config_tempGPU.data.labels.push(registros[contador].momento);  // incluir um novo momento
+            config_tempGPU.data.datasets[0].data.push(registros[contador].leitura);  // incluir uma nova leitura
+
+            contador++;
+        }
+
+    }
+
+    function recuperarDadosIniciais_usoCPU() {
+
+    // esse "registros" será recuperado do backend futuramente
+    var registros = [
+        {
+            momento: '00:03:42',
+            leitura: sortearUsoCPU()
+        },
+        {
+            momento: '00:03:52',
+            leitura: sortearUsoCPU()
+        },
+        {
+            momento: '00:04:02',
+            leitura: sortearUsoCPU()
+        },
+        {
+            momento: '00:04:12',
+            leitura: sortearUsoCPU()
+        },
+        {
+            momento: '00:04:22',
+            leitura: sortearUsoCPU()
+        },
+        {
+            momento: '00:04:32',
+            leitura: sortearUsoCPU()
+        },
+        {
+            momento: '00:04:42',
+            leitura: sortearUsoCPU()
+        }
+    ];
+
+    var contador = 0;
+
+    // registros.length é a quantidade de itens em "registros"
+    while (contador < registros.length) {
+
+        config_usoCPU.data.labels.push(registros[contador].momento);  // incluir um novo momento
+        config_usoCPU.data.datasets[0].data.push(registros[contador].leitura);  // incluir uma nova leitura
+
+        contador++;
+    }
+
+    }
+
+    //atualização de dados:
+    //USO RAM
+
+    var divisor1 = 0;
+    var total1 = 0;
+    var armazenador1 = [];
+
+    function receberNovasLeituras_usoRAM() {
+        setTimeout(() => {
+
+            // esses "agora" etc até "momentos" serão desnecessários quando usarmos o backend futuramente
+            var agora = new Date();
+            var hora = agora.getHours();
+            var minuto = agora.getMinutes();
+            var segundo = agora.getSeconds();
+            var momento = `${hora > 9 ? '' : '0'}${hora}:${minuto > 9 ? '' : '0'}${minuto}:${segundo > 9 ? '' : '0'}${segundo}`;
+
+            // esse "novoRegistro" será recuperado do backend futuramente
+            var novoRegistro = {
+                momento: momento,
+                leitura: sortearUsoRAM()
+            };
+
+            // tirando e colocando valores no gráfico
+            config_usoRAM.data.labels.shift(); // apagar o primeiro
+            config_usoRAM.data.labels.push(novoRegistro.momento); // incluir um novo momento
+            config_usoRAM.data.datasets[0].data.shift();  // apagar o primeiro
+            config_usoRAM.data.datasets[0].data.push(novoRegistro.leitura); // incluir uma nova leitura
+
+            // Atualiza o gráfico
+            window.graficoLinhaUsoRAM.update();
+
+            armazenador1.push(novoRegistro.leitura);
+            total1 += parseInt(novoRegistro.leitura);
+            divisor1++;
+
+            // agendar a chamada da mesma função para daqui a 7 segundos
+            receberNovasLeituras_usoRAM();
+
+            // for(var i = 0; i < total[i]; i++) {
+            //     total[i];
+            // }
+            document.getElementById('media_usoRAM').innerHTML = (total1 / divisor1).toFixed(2);
+            document.getElementById('max_usoRAM').innerHTML = max(armazenador1);
+
+        }, 1000); // 7000 ms -> 7 segundos
+
+        function max(input) {
+        if (toString.call(input) !== "[object Array]") {
+            return false;
+        }
+        return Math.max.apply(null, input);
+        }
+    }
+
+    // TEMP GPU
+    var divisor2 = 0;
+    var total2 = 0;
+    var armazenador2 = [];
+
+    function receberNovasLeituras_tempGPU() {
+        setTimeout(() => {
+
+            // esses "agora" etc até "momentos" serão desnecessários quando usarmos o backend futuramente
+            var agora = new Date();
+            var hora = agora.getHours();
+            var minuto = agora.getMinutes();
+            var segundo = agora.getSeconds();
+            var momento = `${hora > 9 ? '' : '0'}${hora}:${minuto > 9 ? '' : '0'}${minuto}:${segundo > 9 ? '' : '0'}${segundo}`;
+
+            // esse "novoRegistro" será recuperado do backend futuramente
+            var novoRegistro = {
+                momento: momento,
+                leitura: sortearTemperatura()
+            };
+
+            // tirando e colocando valores no gráfico
+            config_tempGPU.data.labels.shift(); // apagar o primeiro
+            config_tempGPU.data.labels.push(novoRegistro.momento); // incluir um novo momento
+            config_tempGPU.data.datasets[0].data.shift();  // apagar o primeiro
+            config_tempGPU.data.datasets[0].data.push(novoRegistro.leitura); // incluir uma nova leitura
+
+            // Atualiza o gráfico
+            window.graficoLinhaTempGPU.update();
+
+            armazenador2.push(novoRegistro.leitura);
+            total2 += parseInt(novoRegistro.leitura);
+            divisor2++;
+
+            // agendar a chamada da mesma função para daqui a 7 segundos
+            receberNovasLeituras_tempGPU();
+
+            document.getElementById('media_TempGPU').innerHTML = (total2 / divisor2).toFixed(2);
+            document.getElementById('max_TempGPU').innerHTML = max(armazenador2);
+
+        }, 1000); // 7000 ms -> 7 segundos
+
+        function max(input) {
+        if (toString.call(input) !== "[object Array]") {
+            return false;
+        }
+        return Math.max.apply(null, input);
+        }
+    }
+
+    //USO RAM
+
+    var divisor3 = 0;
+    var total3 = 0;
+    var armazenador3 = [];
+
+    function receberNovasLeituras_usoCPU() {
+        setTimeout(() => {
+
+            // esses "agora" etc até "momentos" serão desnecessários quando usarmos o backend futuramente
+            var agora = new Date();
+            var hora = agora.getHours();
+            var minuto = agora.getMinutes();
+            var segundo = agora.getSeconds();
+            var momento = `${hora > 9 ? '' : '0'}${hora}:${minuto > 9 ? '' : '0'}${minuto}:${segundo > 9 ? '' : '0'}${segundo}`;
+
+            // esse "novoRegistro" será recuperado do backend futuramente
+            var novoRegistro = {
+                momento: momento,
+                leitura: sortearUsoCPU()
+            };
+
+            // tirando e colocando valores no gráfico
+            config_usoCPU.data.labels.shift(); // apagar o primeiro
+            config_usoCPU.data.labels.push(novoRegistro.momento); // incluir um novo momento
+            config_usoCPU.data.datasets[0].data.shift();  // apagar o primeiro
+            config_usoCPU.data.datasets[0].data.push(novoRegistro.leitura); // incluir uma nova leitura
+
+            // Atualiza o gráfico
+            window.graficoLinhaUsoCPU.update();
+
+            armazenador3.push(novoRegistro.leitura);
+            total3 += parseInt(novoRegistro.leitura);
+            divisor3++;
+
+            // agendar a chamada da mesma função para daqui a 7 segundos
+            receberNovasLeituras_usoCPU();
+
+            // for(var i = 0; i < total[i]; i++) {
+            //     total[i];
+            // }
+            document.getElementById('media_usoCPU').innerHTML = (total3 / divisor3).toFixed(2);
+            document.getElementById('max_usoCPU').innerHTML = max(armazenador3);
+
+        }, 1000); // 7000 ms -> 7 segundos
+
+        function max(input) {
+        if (toString.call(input) !== "[object Array]") {
+            return false;
+        }
+        return Math.max.apply(null, input);
+        }
+    }
+
+    // plotar graficos
+
+    function plotarGrafico() {
+        // chamar os 7 últimos registros de leitura
+
+        recuperarDadosIniciais_usoRAM();
+        recuperarDadosIniciais_tempGPU();
+        recuperarDadosIniciais_usoCPU();
+
+        //Atualizar leituras
+
+        receberNovasLeituras_usoRAM();
+        receberNovasLeituras_tempGPU();
+        receberNovasLeituras_usoCPU();
+
+
+        // criação do gráfico na página
+
+        var atx = document.getElementById('graficoGPU').getContext('2d');
+        window.graficoLinhaTempGPU = new Chart(atx, config_tempGPU);
+
+        var btx = document.getElementById('graficoRAM').getContext('2d');
+        window.graficoLinhaUsoRAM = new Chart(btx, config_usoRAM);
+
+        var ctx = document.getElementById('graficoCPU').getContext('2d');
+        window.graficoLinhaUsoCPU = new Chart(ctx, config_usoCPU);
+
+    }
+
+
+    // indicando que a função "plotarGrafico" será invocada assim que a página carregar
+    window.onload = plotarGrafico;
+
+</script>

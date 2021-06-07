@@ -1,0 +1,33 @@
+2021-04-16 20:30:20 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIO" not found; SQL statement:
+Select username, senha from usuario [42102-199]
+2021-04-16 20:32:47 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIO" not found; SQL statement:
+Select username, senha from usuario [42102-199]
+2021-04-16 20:35:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIO" not found; SQL statement:
+Select username, senha from usuario [42102-199]
+2021-04-18 13:14:45 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIO" not found; SQL statement:
+Select username, senha from usuario [42102-199]
+2021-04-18 13:21:42 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIO" not found; SQL statement:
+Select username, senha from usuario [42102-199]
+2021-04-18 13:34:28 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIO" not found; SQL statement:
+Select username, senha from usuario [42102-199]
+2021-04-18 13:39:49 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIO" not found; SQL statement:
+Select username, senha from usuario [42102-199]
+2021-04-18 13:40:29 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIO" not found; SQL statement:
+Select username, senha from usuario [42102-199]
+2021-04-18 13:41:03 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIO" not found; SQL statement:
+Select username, senha from usuario [42102-199]
+2021-04-18 13:41:52 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIO" not found; SQL statement:
+Select username, senha from usuario [42102-199]
+2021-04-18 14:35:48 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIO" not found; SQL statement:
+Select username, senha from usuario [42102-199]

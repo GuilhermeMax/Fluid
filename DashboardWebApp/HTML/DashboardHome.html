@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" crossorigin="anonymous">
+    <title>Dashboard - Fluid</title>
+    <link rel="stylesheet" href="../CSS/Navbar.css">
+    <link rel="stylesheet" href="../CSS/DashboardHome.css">
+    <script type="text/javascript" src="../funcoes.js"></script>
+</head>
+<body onload="verificar_autenticacao()">
+
+    <div class="container">
+        <div class="navbar">
+            <div class="logo">
+                <img src="../ASSETS/Fluid-Icon.png">
+                <h1>FLUID</h1>
+            </div>
+
+            <div class="usuario-info">
+                <img src="../ASSETS/user.png" alt="">
+                <h3><b id="b_usuario">Usuário</b></h3>
+
+            </div>
+
+            <ul>
+                <li><button onclick="home()"><i class="fas fa-home"></i>Home</button></li>
+                <li><button onclick="cadastrar()"><i class="fas fa-user-plus"></i>Cadastrar</button></li>
+                <li><button onclick="dashboard()"><i class="fas fa-chart-bar"></i>Dashboard</button></li>                
+                <li><button onclick="perfil()"><i class="far fa-user"></i>Perfil</button></li>
+                <li><button onclick="logoff()"><i class="far fa-times-circle"></i>Sair</button></li>
+            </ul>
+        </div>
+
+
+        <div class="div-aux"></div>
+
+        <div class="main">
+
+            <h1 class="titulo">Home</h1>
+
+            <div class="container-searchbar">
+                <h3>Buscar máquina:</h3>
+                <input type="text" placeholder="Hostname">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+
+            <div class="container-computer-cards">
+                <div class="computer-card">
+                   <div class="faixa"></div>
+                   
+      
+                        <img src="../ASSETS/desktop-computer.png" alt="">
+                    
+                        <h3>Hostname</h3>
+                        
+                        <ul>
+                            <li>Espaço disponível:</li>
+                            <li>Disco 1 - 50%</li>
+                            <li style="color: tomato;" >Disco 2 - 90%</li>
+                        </ul>
+
+                
+
+                </div>            
+
+            </div>
+
+        </div>
+
+
+
+
+    </div>
+
+</body>
+
+</html>

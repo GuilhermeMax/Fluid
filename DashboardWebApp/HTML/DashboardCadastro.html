@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital@1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" crossorigin="anonymous">
+    <title>Dashboard - FLUID</title>
+    <link rel="stylesheet" href="../CSS/Navbar.css">
+    <link rel="stylesheet" href="../CSS/DashboardCadastro.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- <div class="navbar"> -->
+
+        <div class="navbar">
+            <div class="logo">
+                <img src="../ASSETS/Fluid-Icon.png">
+                <h1>FLUID</h1>
+            </div>
+
+            <div class="usuario-info">
+                <img src="../ASSETS/user.png" alt="">
+                <h3>Usuário</h3>
+
+            </div>
+
+            <ul>
+                <li><button onclick="home()"><i class="fas fa-home"></i>Home</button></li>
+                <li><button onclick="cadastrar()"><i class="fas fa-user-plus"></i>Cadastrar</button></li>
+                <li><button onclick="dashboard()"><i class="fas fa-chart-bar"></i>Dashboard</button></li>
+                <li><button onclick="perfil()"><i class="far fa-user"></i>Perfil</button></li>
+                <li><button onclick="sair()"><i class="far fa-times-circle"></i>Sair</button></li>
+            </ul>
+        </div>
+
+
+        <div class="div-aux"></div>
+
+        <div class="main">
+            <h1 class="titulo">Cadastrar</h1>
+
+            <div class="container-cadastro">
+                <h1>Registrar usuário</h1>
+
+                <form action="">
+                    <h2>Nome</h2>
+                    <input type="text" name="" id="" placeholder="Ex. Bruno Santos">
+                    
+                    <h2>Usuário</h2>
+                    <input type="text" name="" id="" placeholder="Ex. bruno.santos">
+
+                    <h2>Email</h2>
+                    <input type="text" name="" id="" placeholder="Ex. bruno.santos@exemp.com">
+
+                    <h2>Permissão</h2>
+                    <select name="" id="">
+                        <option value="">Admin</option>
+                        <option value="">Comum</option>
+                    </select>
+
+                    <h2>Senha</h2>
+                    <input type="password" name="" id="" placeholder="Ex. ********">
+                    
+                    <button>Cadastrar</button>
+
+
+                </form>
+
+
+            </div>
+        </div>
+
+
+
+</body>
+
+</html>

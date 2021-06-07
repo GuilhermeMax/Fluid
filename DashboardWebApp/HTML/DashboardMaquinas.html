@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Fluid</title>
+    <link rel="stylesheet" href="../CSS/Navbar.css">
+    <link rel="stylesheet" href="../CSS/DashboardMaquinas.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" crossorigin="anonymous">
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="navbar">
+            <div class="logo">
+                <img src="../ASSETS/Fluid-Icon.png">
+                <h1>FLUID</h1>
+            </div>
+
+            <div class="usuario-info">
+                <img src="../ASSETS/user.png" alt="">
+                <h3>Usuário</h3>
+
+            </div>
+
+            <ul>
+                <li><button onclick="home()"><i class="fas fa-home"></i>Home</button></li>
+                <li><button onclick="cadastrar()"><i class="fas fa-user-plus"></i>Cadastrar</button></li>
+                <li><button onclick="dashboard()"><i class="fas fa-chart-bar"></i>Dashboard</button></li>
+                <li><button onclick="perfil()"><i class="far fa-user"></i>Perfil</button></li>
+                <li><button onclick="sair()"><i class="far fa-times-circle"></i>Sair</button></li>
+            </ul>
+        </div>
+
+
+        <div class="div-aux"></div>
+
+        <div class="main">
+
+            <h1 class="titulo">Máquina</h1>
+
+            <div class="container-info-maquinas">
+                <h1>Selecione uma máquina:</h1>
+                <select name="" id="select-maquina">
+                    <option value="0">Máquina xxxx</option>
+                </select>
+
+                <div class="card-hostname">
+                    <div class="container-label">
+                        <label for=""><b>Hostname: </b></label>
+                        <label for="">xxxxxx</label>
+                    </div>
+                </div>
+
+                <div class="card-historico">
+                    <h1>Histórico</h1>
+                    <div class="container-info-historico">
+                        <div class="container-label">
+                            <label for=""><b>Última edição: </b></label>
+                            <label for="">20/05/2021</label>
+                        </div>
+                        <div class="container-label">
+                            <label for=""><b>Último usuário ativo: </b></label>
+                            <label for="">usuarioX</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="container-mensagem">
+                    <h3>Os dados a seguir são com base nas coletas dos ultimos sete dias</h3>
+                </div>
+
+                <div class="container-hardware">
+                    <div class="container-card-hardwarer">
+                        <div class="card-hardware" id="card-cpu" onclick="trocar_grafico(this.id)">
+                            <h1>CPU</h1>
+                            <label for="">70%</label>
+                            <h3>Média de uso</h3>
+                        </div>
+                        <div class="card-hardware" id="card-gpu" onclick="trocar_grafico(this.id)">
+                            <h1>GPU</h1>
+                            <label for="">90ºC</label>
+                            <h3>Temperatura média</h3>
+                        </div>
+                        <div class="card-hardware" id="card-ram" onclick="trocar_grafico(this.id)">
+                            <h1>CPU</h1>
+                            <label for="">70%</label>
+                            <h3>Média de uso</h3>
+                        </div>
+                        <div class="card-hardware" id="card-disco" onclick="trocar_grafico(this.id)">
+                            <select name="" id="">
+                                <option value="">Disco 1</option>
+                            </select>
+                            <label for="">70%</label>
+                            <h3>Espaço em uso</h3>
+                        </div>
+                    </div>
+
+                    <div class="container-canva-hardware" id="canva-cpu">
+                        <canvas></canvas>
+                    </div>
+
+                    <div class="container-canva-hardware" id="canva-gpu">
+                        <canvas></canvas>
+                    </div>
+
+                    <div class="container-canva-hardware" id="canva-ram">
+                        <canvas></canvas>
+                    </div>
+
+                    <div class="container-canva-hardware" id="canva-disco">
+                        <canvas></canvas>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+
+
+
+
+    </div>
+
+</body>
+
+</html>
+
+<script>
+    function trocar_grafico(clicked_id) {
+        // document.getElementById(clicked_id).style.display = "block";
+
+        document.getElementById("canva-cpu").style.display = "none";
+        document.getElementById("canva-gpu").style.display = "none";
+        document.getElementById("canva-ram").style.display = "none";
+        document.getElementById("canva-disco").style.display = "none";
+
+
+        switch (clicked_id) {
+            case "card-cpu":
+                document.getElementById("canva-cpu").style.display = "block";
+                break
+
+            case "card-gpu":
+                document.getElementById("canva-gpu").style.display = "block";
+                break
+
+            case "card-ram":
+                document.getElementById("canva-ram").style.display = "block";
+                break
+
+            case "card-disco":
+                document.getElementById("canva-disco").style.display = "block";
+                break
+
+        }
+    }
+
+
+
+
+
+
+
+</script>
