@@ -112,12 +112,14 @@
             <artifactId>mssql-jdbc</artifactId>
             <version>7.2.2.jre11</version>
         </dependency>
+        
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20210307</version>
-            <type>jar</type>
         </dependency>
+
     </dependencies>
    
     <!-- Repositório para imagens-->

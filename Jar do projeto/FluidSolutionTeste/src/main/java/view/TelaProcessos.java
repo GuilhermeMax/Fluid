@@ -178,12 +178,10 @@ public class TelaProcessos extends javax.swing.JFrame {
         if (posicao == -1) {
             System.out.println("Nenhum processo selecionado");
         } else {
-       
+            
             processosPesados.remove(posicao);
             atualizarTabela();
         }
-
-
     }//GEN-LAST:event_btnEncerrarActionPerformed
 
     private void btnConcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConcluirActionPerformed
@@ -251,7 +249,4 @@ public class TelaProcessos extends javax.swing.JFrame {
     public void setTbProcessos(JTable tbProcessos) {
         this.tbProcessos = tbProcessos;
     }
-
-    
-
 }

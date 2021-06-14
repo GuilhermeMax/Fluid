@@ -31,7 +31,6 @@ public class ControllerLogin {
         logger.gravarDadosLog("INFO", "Arquivo de log criado.");
         this.telaLogin = telaLogin;      
         comandosSQL = new ControllerBancoDeDados();
-        
     }
 
     public void fazerLogin() throws FileNotFoundException, IOException {

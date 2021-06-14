@@ -1,5 +1,5 @@
 *{
-    
+    overflow-x: hidden;
     margin: 0;
     padding: 0;
     font-size: 100%;
@@ -87,7 +87,6 @@ header li:last-child{
 .cadastro img{
     position: relative;
     top:-3rem;
-
 }
 
 .cadastro h3{
@@ -100,15 +99,15 @@ header li:last-child{
 .cadastro h4{
     font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 35px;
+    margin-bottom: 5px;
     text-align: center;
+    color: violet;
 }
 
 .cadastro p{
     max-width: 800px;
     margin-bottom: 35px;
     text-align: center;
-    
 }
 
 .cadastro fieldset{
@@ -128,13 +127,13 @@ header li:last-child{
 
 .cadastro fieldset input{
     border-radius: 0.5rem;
-    width: 25rem;
+    width: 15rem;
     height: 2rem;
     margin-bottom: 1.3rem;
 }
 
 .cadastro select {
-    width: 15rem;
+    width: 10rem;
 }
 
 .cadastro button{
@@ -149,6 +148,17 @@ header li:last-child{
     border: 0.2rem solid rgb(233, 39, 233);
     background-color: black;
     color: rgb(233, 39, 233);
+}
+
+@media(max-width: 700px){
+    .fildset-con{
+        flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    flex-wrap: wrap;
+    align-items: center;
+
+    }
 }
 
 /* Footer */

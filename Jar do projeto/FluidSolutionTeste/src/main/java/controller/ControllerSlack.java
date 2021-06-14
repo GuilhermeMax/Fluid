@@ -12,34 +12,32 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import org.json.JSONObject;
 
+
+
 /**
  *
  * @author miguel.assuncao
  */
 public class ControllerSlack {
-    //UTILIZAMOS static PORQUE NÃO PRECISAREMOS INTANCIAR.
     
-    //CLIENTE HTTP SERVIRÁ PARA EXECUTAR ALGUMAS REQUISIÇÕES HTTP
-    //      E CAPTURAR RESPOSTAS DELAS, SE HOUVEREM...
     private static HttpClient client = HttpClient.newHttpClient();
+    private static final String url = "https://hooks.slack.com/services/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";
+    private static HttpResponse<String> response;
     
-    //ELE SERÁ FINAL PORQUE NÃO SE DEVE MUDAR, SERÁ O MESMO SEMPRE.
-    private static final String url = "https://hooks.slack.com/services/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";
-
-    // RECEBENDO UM JSON;
-    public static void enviarMensagem(JSONObject content)throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder(URI.create(url)) //recebe a url do webhook;
-                .header("accept", "application/json") //Configuração da requisição;
-                .POST(HttpRequest.BodyPublishers.ofString(content.toString())) //Convertendo o JSON para String;
+    public static void enviarMensagem(JSONObject content) throws IOException, InterruptedException{
+        
+        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                .header("accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(content.toString()))
                 .build();
         
-        //o Send "jogará" a excessão, com esses parametros.
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        
-        //Todo HttpRequest que for mandado retrna um código e se tiver um erro, ele trará o erro.
+        response = client.send(request, HttpResponse.BodyHandlers.ofString());
         System.out.println(String.format("Status: %s", response.statusCode()));
-        
-        //Alguns HttpRequest retornam em JSON e com isso recuperamos a informação necessária.
-        System.out.println(String.format("Response %s", response.body()));  
+        System.out.println(String.format("Response: %s", response.body()));
     }
+
+    public static HttpResponse<String> getResponse() {
+        return response;
+    }
+    
 }

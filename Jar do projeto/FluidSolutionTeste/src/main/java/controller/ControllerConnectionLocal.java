@@ -22,6 +22,8 @@ public class ControllerConnectionLocal {
         dataSource​.setUrl("jdbc:mysql://172.17.0.1:3306/bdFluid?useTimezone=true&serverTimezone=UTC");
         dataSource​.setUsername("root");
         dataSource​.setPassword("#Gfgrupo9");
+        //dataSource​.setUsername("fluid");
+        //dataSource​.setPassword("#Gfgrupo9");
     }
 
     // Getter do dataSource

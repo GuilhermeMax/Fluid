@@ -15,7 +15,9 @@ public class TelaConfig extends javax.swing.JFrame {
      * Creates new form TelaConfig
      */
     public TelaConfig() {
+        this.setSize(960, 540);
         initComponents();
+        
     }
 
     /**

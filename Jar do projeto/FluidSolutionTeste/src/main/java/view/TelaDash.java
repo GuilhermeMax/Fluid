@@ -9,6 +9,7 @@ import controller.ControllerDashboard;
 import com.github.britooo.looca.api.group.discos.Volume;
 import controller.ControllerLog;
 import controller.ControllerSessao;
+import controller.ControllerSlack;
 import informacoes.InformacoesDoSistema;
 import java.awt.Color;
 import java.awt.Image;
@@ -20,6 +21,7 @@ import java.util.TimerTask;
 import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONObject;
 
 /**
  *
@@ -35,6 +37,11 @@ public class TelaDash extends javax.swing.JFrame {
     private Volume volume;
     private Timer timer;
     private ControllerLog logger;
+    private Integer controleAlertaGpu;
+    private Integer controleAlertaRam;
+    private Integer controleAlertaCpu;
+    private TelaConfiguracao telaConfiguracao;
+    //private TelaConfiguracao telaConfiguracao;
 
     /**
      * Creates new form TelaHome
@@ -44,12 +51,17 @@ public class TelaDash extends javax.swing.JFrame {
         Image icon = Toolkit.getDefaultToolkit().getImage("src/main/resources/images/icon.png");
         this.setIconImage(icon);
         logger = ControllerLog.getLogAtivo();
-        
         dash = new ControllerDashboard();
         sessao = ControllerSessao.getSessaoAtiva();
         lblUsername.setText(sessao.getUsuarioAtivo().getUsername());
         lblCargo.setText(sessao.getUsuarioAtivo().getTipoUsuario());
         volumeLista = sessao.getInfo().getListaVolumes();
+        controleAlertaGpu = 0;
+        controleAlertaRam = 0;
+        controleAlertaCpu = 0;
+        telaConfiguracao = new TelaConfiguracao(this);
+        telaConfiguracao.setVisible(false);
+        //telaConfiguracao = TelaConfiguracao.getTelaConfiguracao();
         // volumeLista = info.getListaVolumes();
     }
 
@@ -167,6 +179,11 @@ public class TelaDash extends javax.swing.JFrame {
         jLabel4.setText("Configurações");
         jLabel4.setToolTipText("");
         jLabel4.setAlignmentY(0.4F);
+        jLabel4.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel4MouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout btnConfigLayout = new javax.swing.GroupLayout(btnConfig);
         btnConfig.setLayout(btnConfigLayout);
@@ -410,13 +427,13 @@ public class TelaDash extends javax.swing.JFrame {
         lblInfoGpu.setBackground(new java.awt.Color(233, 231, 231));
         lblInfoGpu.setForeground(new java.awt.Color(233, 231, 231));
         lblInfoGpu.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblInfoGpu.setText("Sua GPU está muito quente, encerre alguns processos para que seu trabalho não seja prejudicado");
+        lblInfoGpu.setText("Atenção, não foi encontrada uma GPU.");
         lblInfoGpu.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
         lblInfoRam.setBackground(new java.awt.Color(233, 231, 231));
         lblInfoRam.setForeground(new java.awt.Color(233, 231, 231));
         lblInfoRam.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblInfoRam.setText("Sua RAM está com a ultilização acima do valor seguro, encerre alguns processos para que você não perca desempenho");
+        lblInfoRam.setText("Diminua a qualidade do preview para que a ultilização da RAM diminua.");
         lblInfoRam.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
@@ -540,11 +557,7 @@ public class TelaDash extends javax.swing.JFrame {
         btnStart.setEnabled(true);
         btnStop.setEnabled(false);
         cancelTimer();
-        try {
-            logger.gravarDadosLog("INFO", "A captura de dados foi finalizada.");
-        } catch (IOException ex) {
-            Logger.getLogger(TelaDash.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        
     }//GEN-LAST:event_btnStopActionPerformed
 
     private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
@@ -558,10 +571,20 @@ public class TelaDash extends javax.swing.JFrame {
         }
         startTimer();
     }//GEN-LAST:event_btnStartActionPerformed
+
+    private void jLabel4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel4MouseClicked
+        // abrir tela config
+        telaConfiguracao.setVisible(true);
+        this.setVisible(false);
+    }//GEN-LAST:event_jLabel4MouseClicked
     public void cancelTimer() {
         this.timer.cancel();
         System.out.println("Parando de capturar dados.");
-
+        try {
+            logger.gravarDadosLog("INFO", "A captura de dados foi finalizada.");
+        } catch (IOException ex) {
+            Logger.getLogger(TelaDash.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void startTimer() {
@@ -570,10 +593,14 @@ public class TelaDash extends javax.swing.JFrame {
             public void run() {
                 Integer quantidadeDisco = sessao.getInfo().getQuantidadeDisco();
                 Double porcentagemRAM = sessao.getInfo().getPorcentagemUsoRAM();
-                String porcentagemCPU = String.format("%.0f",  sessao.getInfo().getPorcentagemUsoCPU());
-                
+                String porcentagemCPU = String.format("%.0f", sessao.getInfo().getPorcentagemUsoCPU());
+
                 Double tempGpu = sessao.getInfo().getTempGpu();
-                alerta(tempGpu, porcentagemRAM, sessao.getInfo().getPorcentagemUsoCPU());  
+                try {
+                    alerta(tempGpu, porcentagemRAM, sessao.getInfo().getPorcentagemUsoCPU());
+                } catch (IOException | InterruptedException ex) {
+                    Logger.getLogger(TelaDash.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 // List<> volumes = info.getListaVolumes();
                 lblCpuValue.setText(porcentagemCPU + "%");
                 lblRamValue.setText(String.format("%.0f%%", porcentagemRAM));
@@ -597,7 +624,7 @@ public class TelaDash extends javax.swing.JFrame {
                 for (int i = 0; i < quantidadeDisco; i++) {
                     volume = volumeLista.get(i);
                     try {
-                        dash.insertDadosDisco(sessao.getInfo().getPorcentagemDisponivelDisco(volume).doubleValue(), fkHardware);
+                        dash.insertDadosDisco(sessao.getInfo().getPorcentagemEmUso(volume).doubleValue(), fkHardware);
                     } catch (IOException ex) {
                         Logger.getLogger(TelaDash.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -607,42 +634,63 @@ public class TelaDash extends javax.swing.JFrame {
         };
         this.timer = new Timer();
         System.out.println("Coletando novos dados ...");
-        int period = 3000;
+        int period = 15000;
         this.timer.schedule(timerTask, 0, period);
     }
+
     // Define as cores das labels de informações de acordo com os dados coletados
-    public void alerta(Double gpu, Double ram, Double cpu) {
-        Color background = new Color(233,231,231);
-        Color amarelo = new Color(255,215,0);
-        Color verde = new Color(34,139,34);
+    public void alerta(Double gpu, Double ram, Double cpu) throws IOException, InterruptedException {
+        Color background = new Color(233, 231, 231);
+        Color amarelo = new Color(255, 215, 0);
+        Color verde = new Color(34, 139, 34);
         String alto = "Alto";
         String moderado = "Moderado";
         String baixo = "Baixo";
-        if (!(gpu == -1.0)) {
+        JSONObject alertaCPU = new JSONObject();
+        JSONObject alertaGPU = new JSONObject();
+        JSONObject alertaRAM = new JSONObject();
+        alertaRAM.put("text", "Os valores da memória RAM da sua máquina estão muito elevados! Você pode diminuir a qualidade do preview para que eles voltem ao normal.");
+        alertaGPU.put("text", "A temperatura da sua GPU está muito elevada!");
+        alertaCPU.put("text", "Sua CPU está com valores muitos elevados! Você pode encerrar alguns processos para evitar possiveis problemas.");
+
+        if ((gpu == -1.0)) {
+            lblInfoGpu.setForeground(Color.black);
+        } else {
+            lblInfoGpu.setForeground(background);
             if (gpu < 70.0) {
                 lblDadoGpu.setForeground(verde);
                 lblGpuValue.setForeground(verde);
                 lblDadoGpu.setText(baixo);
-                lblInfoGpu.setForeground(background);
             } else if (gpu < 90.0) {
                 lblDadoGpu.setForeground(amarelo);
                 lblGpuValue.setForeground(amarelo);
                 lblDadoGpu.setText(moderado);
-                lblInfoGpu.setForeground(background);
             } else {
                 lblDadoGpu.setForeground(Color.red);
                 lblGpuValue.setForeground(Color.red);
                 lblDadoGpu.setText(alto);
-                lblInfoGpu.setForeground(Color.black);
+                if (controleAlertaGpu == 0) {
+                    ControllerSlack.enviarMensagem(alertaGPU);
+                    
+                        if (ControllerSlack.getResponse().body().equals("ok")) {
+                            logger.gravarDadosLog("INFO", "Alerta enviado pelo slack.");
+                        } else {
+                            logger.gravarDadosLog("ERRO", "Não foi possivel enviar alerta pelo slack. " + "Response: " + ControllerSlack.getResponse().body());
+                        }
+                    
+                } else if (controleAlertaGpu == 9) {
+                    controleAlertaGpu = 0;
+                }
+                controleAlertaGpu++;
             }
         }
-        
-        if(ram < 70.0){
+
+        if (ram < 60.0) {
             lblDadoRam.setForeground(verde);
             lblRamValue.setForeground(verde);
             lblDadoRam.setText(baixo);
             lblInfoRam.setForeground(background);
-        } else if(ram < 90.0){
+        } else if (ram < 70.0) {
             lblDadoRam.setForeground(amarelo);
             lblRamValue.setForeground(amarelo);
             lblDadoRam.setText(moderado);
@@ -652,14 +700,27 @@ public class TelaDash extends javax.swing.JFrame {
             lblRamValue.setForeground(Color.red);
             lblDadoRam.setText(alto);
             lblInfoRam.setForeground(Color.black);
+            if (controleAlertaRam == 0) {
+                ControllerSlack.enviarMensagem(alertaRAM);
+                
+                    if (ControllerSlack.getResponse().body().equals("ok")) {
+                        logger.gravarDadosLog("INFO", "Alerta enviado pelo slack.");
+                    } else {
+                        logger.gravarDadosLog("ERRO", "Não foi possivel enviar alerta pelo slack. " + "Response: " + ControllerSlack.getResponse().body());
+                    }
+                
+            } else if (controleAlertaRam == 9) {
+                controleAlertaRam = 0;
+            }
+            controleAlertaRam++;
         }
-        
-        if(cpu < 70.0){
+
+        if (cpu < 60.0) {
             lblDadoCpu.setForeground(verde);
             lblCpuValue.setForeground(verde);
             lblDadoCpu.setText(baixo);
             lblInfoCpu.setForeground(background);
-        } else if(cpu < 90.0){
+        } else if (cpu < 90.0) {
             lblDadoCpu.setForeground(amarelo);
             lblCpuValue.setForeground(amarelo);
             lblDadoCpu.setText(moderado);
@@ -669,7 +730,21 @@ public class TelaDash extends javax.swing.JFrame {
             lblCpuValue.setForeground(Color.red);
             lblDadoCpu.setText(alto);
             lblInfoCpu.setForeground(Color.black);
+            if (controleAlertaCpu == 0) {
+                ControllerSlack.enviarMensagem(alertaCPU);
+                
+                    if (ControllerSlack.getResponse().body().equals("ok")) {
+                        logger.gravarDadosLog("INFO", "Alerta enviado pelo slack.");
+                    } else {
+                        logger.gravarDadosLog("ERRO", "Não foi possivel enviar alerta pelo slack. " + "Response: " + ControllerSlack.getResponse().body());
+                    }
+                
+            } else if (controleAlertaCpu == 9) {
+                controleAlertaCpu = 0;
+            }
+            controleAlertaCpu++;
         }
+
     }
     
     /**
@@ -697,6 +772,12 @@ public class TelaDash extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(TelaDash.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 

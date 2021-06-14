@@ -106,10 +106,10 @@ public class InformacoesDoSistema {
     }
 
     // Retorna porcentagem disponivel do disco total
-    public Integer getPorcentagemDisponivelDisco(Volume disponivel) {
+    public Integer getPorcentagemEmUso(Volume disponivel) {
         Double dado;
         Integer porcentagem;
-        dado = (disponivel.getDisponivel().doubleValue() * 100) / disponivel.getTotal().doubleValue();
+        dado = 100 - (disponivel.getDisponivel().doubleValue() * 100) / disponivel.getTotal().doubleValue();
         porcentagem = Math.round(dado.intValue());
         return porcentagem;
     }

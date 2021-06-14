@@ -5,6 +5,8 @@ var Usuario = require('../models').Usuario;
 var Computador = require('../models').Computador;
 var Dado = require('../models').Dado;
 var Acesso = require('../models').Acesso;
+var Media = require('../models').Media;
+var Tempo = require('../models').Tempo;
 
 let sessoes = [];
 
@@ -146,7 +148,7 @@ router.get('/listarDadosDisco/:fkComputador', function(req, res, next) {
 							computador on 
 								idComputador = fkComputador where
 									idComputador = ${fkComputador} and
-									fkhardware>3 order by idDado desc`;
+									fkHardware>3 order by idDado desc`;
 
 	sequelize.query(instrucaoSql, {
 		model: Dado,
@@ -167,7 +169,7 @@ router.get('/listarDiscos/:fkComputador', function(req, res, next) {
 	var fkComputador = req.params.fkComputador;	
 	
 	const instrucaoSql = `
-				select fkHardware from dado inner join computador on idComputador = fkComputador where idComputador = ${fkComputador} and fkhardware>3 order by idDado desc`;
+				select fkHardware from dado inner join computador on idComputador = fkComputador where idComputador = ${fkComputador} and fkHardware>3 order by idDado desc`;
 
 	sequelize.query(instrucaoSql, {
 		model: Dado,
@@ -231,7 +233,7 @@ router.get('/acesso/:fkComputador', function(req, res, next) {
 	const instrucaoSql = `select top 1 * from [dbo].[Acesso] inner join [dbo].[Usuario] on fkUsuario = idUsuario where fkComputador = ${fkComputador} order by idAcesso desc ;`
 
 	sequelize.query(instrucaoSql, {
-		model: Dado,
+		model: Usuario,
 		mapToModel: true 
 	  })
 	  .then(resultado => {
@@ -247,11 +249,10 @@ router.get('/acessoTime/:fkComputador', function(req, res, next) {
 	
 	var fkComputador = req.params.fkComputador;
 
-	const instrucaoSql = `select convert(varchar, horaAcesso, 3) from [dbo].[Acesso] inner join [dbo].[Usuario] on fkUsuario = idUsuario where fkComputador = ${fkComputador} order by idAcesso desc;`
+	const instrucaoSql = `select top 1 convert(varchar, horaAcesso,103) as tempo from [dbo].[Acesso] inner join [dbo].[Computador] on fkComputador = idComputador where fkComputador = ${fkComputador} order by horaAcesso desc;`
 
 	sequelize.query(instrucaoSql, {
-		model: Acesso,
-		mapToModel: true 
+		model: Tempo
 	  })
 	  .then(resultado => {
 			console.log(`Encontrados: ${resultado.length}`);
@@ -264,18 +265,302 @@ router.get('/acessoTime/:fkComputador', function(req, res, next) {
 
 router.get('/mediaCPU/:fkComputador', function(req, res, next) {
 	
+	var fkComputador = req.params.fkComputador;
+
 	const instrucaoSql = `select CAST(AVG(usoEmPorcentagem) as decimal(10,0)) as media from [dbo].[Dado] where dadoDateTime BETWEEN DATEADD(WEEK,-1,GETDATE()) AND GETDATE() AND fkHardware = 1 and fkComputador = ${fkComputador};`;
 
 	sequelize.query(instrucaoSql, {
-		model: Dado,
-		mapToModel: true
+		model: Media
 	}).then(resultado => {
-		console.log(`Encontrados: ${resultado.length}`);
-			res.json(resultado);
+		console.log(`Encontrados: ${resultado}`);
+			res.send(resultado);
 	  }).catch(erro => {
 			console.error(erro);
 			res.status(500).send(erro.message);
 	});
 });
+
+router.get('/mediaRAM/:fkComputador', function(req, res, next) {
+	
+	var fkComputador = req.params.fkComputador;
+
+	const instrucaoSql = `select CAST(AVG(usoEmPorcentagem) as decimal(10,0)) as media from [dbo].[Dado] where dadoDateTime BETWEEN DATEADD(WEEK,-1,GETDATE()) AND GETDATE() AND fkHardware = 2 and fkComputador = ${fkComputador};`;
+
+	sequelize.query(instrucaoSql, {
+		model: Media
+	}).then(resultado => {
+		console.log(`Encontrados: ${resultado}`);
+			res.send(resultado);
+	  }).catch(erro => {
+			console.error(erro);
+			res.status(500).send(erro.message);
+	});
+});
+
+router.get('/mediaGPU/:fkComputador', function(req, res, next) {
+	
+	var fkComputador = req.params.fkComputador;
+
+	const instrucaoSql = `select CAST(AVG(temperatura) as decimal(10,0)) as media from [dbo].[Dado] where dadoDateTime BETWEEN DATEADD(WEEK,-1,GETDATE()) AND GETDATE() AND fkHardware = 3 and fkComputador = ${fkComputador};`;
+
+	sequelize.query(instrucaoSql, {
+		model: Media
+	}).then(resultado => {
+		console.log(`Encontrados: ${resultado}`);
+			res.send(resultado);
+	  }).catch(erro => {
+			console.error(erro);
+			res.status(500).send(erro.message);
+	});
+});
+
+router.get('/mediaDISCO/:fkComputador/:fkDisco', function(req, res, next) {
+	
+	var fkComputador = req.params.fkComputador;
+	var fkDisco = req.params.fkDisco;
+
+	const instrucaoSql = `select CAST(AVG(usoEmPorcentagem) as decimal(10,0)) as media from [dbo].[Dado] where dadoDateTime BETWEEN DATEADD(WEEK,-1,GETDATE()) AND GETDATE() AND fkHardware = ${fkDisco} and fkComputador = ${fkComputador};`;
+
+	sequelize.query(instrucaoSql, {
+		model: Media
+	}).then(resultado => {
+		console.log(`Encontrados: ${resultado}`);
+			res.send(resultado);
+	  }).catch(erro => {
+			console.error(erro);
+			res.status(500).send(erro.message);
+	});
+});
+
+router.get('/capturarHostname/:fkComputador', function(req, res, next) {
+	
+	var fkComputador = req.params.fkComputador;
+
+	console.log(`Recuperando as ultimas informações de computadores`);
+	
+	const instrucaoSql = `select * from computador where idComputador = ${fkComputador}`;
+
+	sequelize.query(instrucaoSql, {
+		model: Computador,
+		mapToModel: true 
+	  })
+	  .then(resultado => {
+			console.log(`Encontrados: ${resultado.length}`);
+			res.json(resultado);
+	  }).catch(erro => {
+			console.error(erro);
+			res.status(500).send(erro.message);
+	  });
+});
+
+router.get('/dadosGeralCPU/:fkComputador', function(req, res, next) {
+	
+	// quantas são as últimas leituras que quer? 8 está bom?
+	const limite_linhas = 7;
+
+	var fkComputador = req.params.fkComputador;
+
+	console.log(`Recuperando as ultimas ${limite_linhas} leituras`);
+	
+	const instrucaoSql = `select top ${limite_linhas}
+						usoEmPorcentagem,
+						dadoDateTime,
+						FORMAT(dadoDateTime,'HH:mm:ss') as dataRegistro_grafico
+						from Dado
+						where fkComputador = ${fkComputador} and fkHardware = 1
+						order by idDado desc`;
+
+	sequelize.query(instrucaoSql, {
+		model: Dado,
+		mapToModel: true 
+	  })
+	  .then(resultado => {
+			console.log(`Encontrados: ${resultado.length}`);
+			res.json(resultado);
+	  }).catch(erro => {
+			console.error(erro);
+			res.status(500).send(erro.message);
+	  });
+});
+
+router.get('/tempo-realCPU/:fkComputador', function(req, res, next) {
+	console.log('Recuperando dados de cpu atuais');
+
+	//var fksetor = req.body.fksetor; // depois de .body, use o nome (name) do campo em seu formulário de login
+	var fkComputador = req.params.fkComputador;
+
+	const instrucaoSql = `select top 1 usoEmPorcentagem, temperatura, FORMAT(dadoDateTime,'HH:mm:ss') as dataRegistro_grafico, fkComputador from dado where fkComputador = ${fkComputador} and fkHardware = 1 order by idDado desc`;
+
+	sequelize.query(instrucaoSql, { type: sequelize.QueryTypes.SELECT })
+		.then(resultado => {
+			res.json(resultado[0]);
+		}).catch(erro => {
+			console.error(erro);
+			res.status(500).send(erro.message);
+		});
+});
+
+router.get('/dadosGeralGPU/:fkComputador', function(req, res, next) {
+	
+	// quantas são as últimas leituras que quer? 8 está bom?
+	const limite_linhas = 7;
+
+	var fkComputador = req.params.fkComputador;
+
+	console.log(`Recuperando as ultimas ${limite_linhas} leituras`);
+	
+	const instrucaoSql = `select top ${limite_linhas}
+						temperatura,
+						dadoDateTime,
+						FORMAT(dadoDateTime,'HH:mm:ss') as dataRegistro_grafico
+						from Dado
+						where fkComputador = ${fkComputador} and fkHardware = 3
+						order by idDado desc`;
+
+	sequelize.query(instrucaoSql, {
+		model: Dado,
+		mapToModel: true 
+	  })
+	  .then(resultado => {
+			console.log(`Encontrados: ${resultado.length}`);
+			res.json(resultado);
+	  }).catch(erro => {
+			console.error(erro);
+			res.status(500).send(erro.message);
+	  });
+});
+
+router.get('/tempo-realGPU/:fkComputador', function(req, res, next) {
+	console.log('Recuperando dados de cpu atuais');
+
+	//var fksetor = req.body.fksetor; // depois de .body, use o nome (name) do campo em seu formulário de login
+	var fkComputador = req.params.fkComputador;
+
+	const instrucaoSql = `select top 1 usoEmPorcentagem, temperatura, FORMAT(dadoDateTime,'HH:mm:ss') as dataRegistro_grafico, fkComputador from dado where fkComputador = ${fkComputador} and fkHardware = 3 order by idDado desc`;
+
+	sequelize.query(instrucaoSql, { type: sequelize.QueryTypes.SELECT })
+		.then(resultado => {
+			res.json(resultado[0]);
+		}).catch(erro => {
+			console.error(erro);
+			res.status(500).send(erro.message);
+		});
+});
+
+router.get('/dadosGeralRAM/:fkComputador', function(req, res, next) {
+	
+	// quantas são as últimas leituras que quer? 8 está bom?
+	const limite_linhas = 7;
+
+	var fkComputador = req.params.fkComputador;
+
+	console.log(`Recuperando as ultimas ${limite_linhas} leituras`);
+	
+	const instrucaoSql = `select top ${limite_linhas}
+						usoEmPorcentagem,
+						dadoDateTime,
+						FORMAT(dadoDateTime,'HH:mm:ss') as dataRegistro_grafico
+						from Dado
+						where fkComputador = ${fkComputador} and fkHardware = 2
+						order by idDado desc`;
+
+	sequelize.query(instrucaoSql, {
+		model: Dado,
+		mapToModel: true 
+	  })
+	  .then(resultado => {
+			console.log(`Encontrados: ${resultado.length}`);
+			res.json(resultado);
+	  }).catch(erro => {
+			console.error(erro);
+			res.status(500).send(erro.message);
+	  });
+});
+
+router.get('/tempo-realRAM/:fkComputador', function(req, res, next) {
+	console.log('Recuperando dados de cpu atuais');
+
+	//var fksetor = req.body.fksetor; // depois de .body, use o nome (name) do campo em seu formulário de login
+	var fkComputador = req.params.fkComputador;
+
+	const instrucaoSql = `select top 1 usoEmPorcentagem, temperatura, FORMAT(dadoDateTime,'HH:mm:ss') as dataRegistro_grafico, fkComputador from dado where fkComputador = ${fkComputador} and fkHardware = 2 order by idDado desc`;
+
+	sequelize.query(instrucaoSql, { type: sequelize.QueryTypes.SELECT })
+		.then(resultado => {
+			res.json(resultado[0]);
+		}).catch(erro => {
+			console.error(erro);
+			res.status(500).send(erro.message);
+		});
+});
+
+router.get('/dadosGraficoDisco/:fkComputador/:fkHardware', function(req, res, next) {
+	
+	// quantas são as últimas leituras que quer? 8 está bom?
+	const limite_linhas = 7;
+
+	var fkComputador = req.params.fkComputador;
+	
+	var fkHardware = req.params.fkHardware;
+
+	console.log(`Recuperando as ultimas ${limite_linhas} leituras`);
+	
+	const instrucaoSql = `select top ${limite_linhas}
+						usoEmPorcentagem,
+						dadoDateTime,
+						FORMAT(dadoDateTime,'HH:mm:ss') as dataRegistro_grafico
+						from Dado
+						where fkComputador = ${fkComputador} and fkHardware = ${fkHardware}
+						order by idDado desc`;
+
+	sequelize.query(instrucaoSql, {
+		type: sequelize.QueryTypes.SELECT
+	  })
+	  .then(resultado => {
+			console.log(`Encontrados: ${resultado.length}`);
+			res.json(resultado);
+	  }).catch(erro => {
+			console.error(erro);
+			res.status(500).send(erro.message);
+	  });
+});
+
+router.get('/tempo-realDisco/:fkComputador/:fkHardware', function(req, res, next) {
+	console.log('Recuperando dados de cpu atuais');
+
+	//var fksetor = req.body.fksetor; // depois de .body, use o nome (name) do campo em seu formulário de login
+	var fkComputador = req.params.fkComputador;
+
+	var fkHardware = req.params.fkHardware;
+
+	const instrucaoSql = `select top 1 usoEmPorcentagem, FORMAT(dadoDateTime,'HH:mm:ss') as dataRegistro_grafico, fkComputador from dado where fkComputador = ${fkComputador} and fkHardware = ${fkHardware} order by idDado desc`;
+
+	sequelize.query(instrucaoSql, { type: sequelize.QueryTypes.SELECT })
+		.then(resultado => {
+			res.json(resultado[0]);
+		}).catch(erro => {
+			console.error(erro);
+			res.status(500).send(erro.message);
+		});
+});
+
+// router.get('/dadosRecentesCPU/:fkComputador', function(req, res, next) {
+// 	console.log('Recuperando dados de cpu atuais');
+
+// 	//var fksetor = req.body.fksetor; // depois de .body, use o nome (name) do campo em seu formulário de login
+// 	var fkComputador = req.params.fkComputador;
+
+// 	const instrucaoSql = `select * from dado where dadoDateTime BETWEEN DATEADD(MINUTE,-5,GETDATE()) AND GETDATE() and fkComputador = ${fkComputador} and fkHardware = 1;`;
+
+// 	sequelize.query(instrucaoSql, {
+// 		type: sequelize.QueryTypes.SELECT
+// 	})
+// 		.then(resultado => {
+// 			res.json(resultado);
+// 		}).catch(erro => {
+// 			console.error(erro);
+// 			res.status(500).send(erro.message);
+// 		});
+// });
 
 module.exports = router;

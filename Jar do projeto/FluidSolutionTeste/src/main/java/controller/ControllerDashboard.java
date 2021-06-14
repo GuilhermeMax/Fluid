@@ -7,18 +7,6 @@ package controller;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.Timer;
-import model.Computador;
-import org.springframework.jdbc.CannotGetJdbcConnectionException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
-import view.TelaDash;
-import view.TelaLogin;
 
 /**
  *
@@ -81,8 +69,9 @@ public class ControllerDashboard {
         Integer idComputador = sessaoAtiva.getComputadorUtilizado().getIdComputador();
 
         String insertStatementDisco = "insert into dado (usoEmPorcentagem, fkHardware, fkComputador) values (?, ?, ?);";
-
+        
         // Insert Disco
         comandosSQL.insertIntoDado(insertStatementDisco, porcentagemUso, fkHardware, idComputador);
+        comandosSQL.insertIntoDadoAws(insertStatementDisco, porcentagemUso, fkHardware, idComputador); 
     }
 }

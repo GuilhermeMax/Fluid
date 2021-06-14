@@ -8,8 +8,6 @@
     
 }
 
-
-
 h1 {
     font-family: "Orbitron";    
 }
@@ -78,8 +76,6 @@ h1 {
     filter: saturate(2);
 }
 
-
-
 .navbar button{
     background-color: rgba(128, 128, 128, 0);
     border: none;
@@ -114,3 +110,44 @@ h1 {
     width: 20%;
     height: 100%;
 }
+
+/* Responsividade */
+
+@media(max-width: 900px){
+    .navbar .logo h1 {
+        display: none;
+    }
+    .navbar .logo img {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+@media(max-width: 600px) {
+    .navbar .usuario-info img {
+        height: 70px;
+        width: 70px;
+        
+    }
+}
+
+@media(max-width: 844px){
+    .navbar ul li button span{
+        display: none;
+    }
+    .navbar ul li button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 97%;
+    }
+    .navbar ul li button i{
+        font-size: 30px;
+        margin: 0;
+    }
+}
+
+
+
+

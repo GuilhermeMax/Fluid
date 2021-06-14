@@ -52,7 +52,11 @@ public class ControllerBancoDeDados {
         try{
             projetos = con.query("Select * from projeto", new BeanPropertyRowMapper(Projeto.class));
         } catch (CannotGetJdbcConnectionException ex){
-            logger.gravarDadosLog("ERRO", "Não foi possivel realizar a consulta dos projetos cadastrados." + Arrays.toString(ex.getStackTrace()));
+            logger.gravarDadosLog("ERRO","SELECT" , "Não foi possivel realizar a consulta dos projetos cadastrados." + Arrays.toString(ex.getStackTrace()));
+            erro = true;
+        }
+        if(!erro){
+            logger.gravarDadosLog("INFO", "SELECT" , "A busca por projetos cadastrados foi realizada com sucesso.");
         }
         erro = false;
         return projetos;
@@ -66,11 +70,11 @@ public class ControllerBancoDeDados {
                 nome,
                 etapa);
         } catch (CannotGetJdbcConnectionException ex){
-            logger.gravarDadosLog("ERRO", "Não foi possivel realizar o delete do projeto." + Arrays.toString(ex.getStackTrace()));
+            logger.gravarDadosLog("ERRO","DELETE" , "Não foi possivel realizar o delete do projeto." + Arrays.toString(ex.getStackTrace()));
             erro = true;
         }
         if(!erro){
-            logger.gravarDadosLog("INFO", "O projeto " + nome + " foi deletado com sucesso.");
+            logger.gravarDadosLog("INFO", "DELETE" , "O projeto " + nome + " foi deletado com sucesso.");
         }
         erro = false;
     }
@@ -92,11 +96,11 @@ public class ControllerBancoDeDados {
         } catch (ParseException ex) {
             Logger.getLogger(ControllerBancoDeDados.class.getName()).log(Level.SEVERE, null, ex);
         } catch (CannotGetJdbcConnectionException ex) {
-            logger.gravarDadosLog("ERRO", "Não foi possivel inserir um no projeto no banco de dados." + Arrays.toString(ex.getStackTrace()));
+            logger.gravarDadosLog("ERRO", "INSERT" , "Não foi possivel inserir um no projeto no banco de dados." + Arrays.toString(ex.getStackTrace()));
+            erro = true;
         }
         if(!erro){
-            logger.gravarDadosLog("INFO", "O projeto " + nomeProjeto + " foi registrado com sucesso.");
-            erro = true;
+            logger.gravarDadosLog("INFO", "INSERT" , "O projeto " + nomeProjeto + " foi registrado com sucesso.");
         }
         erro = false;
     }
@@ -108,12 +112,12 @@ public class ControllerBancoDeDados {
         try {
             usuarios = con.query("Select * from usuario", new BeanPropertyRowMapper(Usuario.class));
         } catch (CannotGetJdbcConnectionException ex) {
-            logger.gravarDadosLog("ERRO", "Não foi possivel realizar a consulta dos usuário cadastrados." + Arrays.toString(ex.getStackTrace()));
+            logger.gravarDadosLog("ERRO", "SELECT" , "Não foi possivel realizar a consulta dos usuário cadastrados." + Arrays.toString(ex.getStackTrace()));
             erro = true;
         }
         
         if(!erro){
-            logger.gravarDadosLog("INFO", "A busca de usuários cadastrados foi realizada com sucesso.");
+            logger.gravarDadosLog("INFO", "SELECT" , "A busca de usuários cadastrados foi realizada com sucesso.");
         }
         erro = false;
         return usuarios;
@@ -125,12 +129,12 @@ public class ControllerBancoDeDados {
         try{
             computadores = con.query("select * from computador where hostname = ?", new BeanPropertyRowMapper(Computador.class), hostname);
         } catch (CannotGetJdbcConnectionException ex){
-            logger.gravarDadosLog("ERRO", "Não foi possivel realizar a consulta dos computadores cadastrados." + Arrays.toString(ex.getStackTrace()));
+            logger.gravarDadosLog("ERRO", "SELECT" , "Não foi possivel realizar a consulta dos computadores cadastrados." + Arrays.toString(ex.getStackTrace()));
             erro = true;
         }
         
         if(!erro){
-            logger.gravarDadosLog("INFO", "A busca de máquinas cadastradas foi realizada com sucesso.");
+            logger.gravarDadosLog("INFO", "SELECT" , "A busca de máquinas cadastradas foi realizada com sucesso.");
         }
         erro = false;
         return computadores;
@@ -147,7 +151,7 @@ public class ControllerBancoDeDados {
         }
         
         if(!erro){
-            logger.gravarDadosLog("INFO", "A máquina(" + hostname + ") foi cadastrada com sucesso.");
+            logger.gravarDadosLog("INFO", "INSERT" , "A máquina(" + hostname + ") foi cadastrada com sucesso.");
         }
         erro = false;
     }
@@ -158,7 +162,7 @@ public class ControllerBancoDeDados {
         try {
             con.update(query, porcentagem, fkHardware, fkComputador);
         } catch (CannotGetJdbcConnectionException ex) {
-            logger.gravarDadosLog("ERRO", "Não foi possivel inserir dados no banco de dados na Azure" + Arrays.toString(ex.getStackTrace()));
+            logger.gravarDadosLog("ERRO","INSERT" , "Não foi possivel inserir dados no banco de dados na Azure" + Arrays.toString(ex.getStackTrace()));
             erro = true;
         }
         
@@ -185,7 +189,7 @@ public class ControllerBancoDeDados {
         }
         
         if(!erro){
-            logger.gravarDadosLog("INFO", "O dado coletado de " + hardware + "(" + porcentagem +  "%) foi registrado com sucesso.");
+            logger.gravarDadosLog("INFO", "INSERT" , "O dado coletado de " + hardware + "(" + porcentagem +  "%) foi registrado com sucesso.");
         }    
         erro = false;
     }
@@ -195,7 +199,7 @@ public class ControllerBancoDeDados {
         try{
             con.update(query, porcentagem, fkHardware, fkComputador);
         } catch (CannotGetJdbcConnectionException ex){
-            logger.gravarDadosLog("ERRO", "Não foi possivel inserir dados no banco de dados na Azure." + Arrays.toString(ex.getStackTrace()));
+            logger.gravarDadosLog("ERRO","INSERT" , "Não foi possivel inserir dados no banco de dados na Azure." + Arrays.toString(ex.getStackTrace()));
             erro = true;
         }
         
@@ -221,7 +225,7 @@ public class ControllerBancoDeDados {
                 break;
         }
         if(!erro){
-            logger.gravarDadosLog("INFO", "O dado coletado de " + hardware + "(" + porcentagem +  "%) foi registrado com sucesso.");
+            logger.gravarDadosLog("INFO", "INSERT" , "O dado coletado de " + hardware + "(" + porcentagem +  "%) foi registrado com sucesso.");
         }    
         erro = false;
     }
@@ -234,7 +238,7 @@ public class ControllerBancoDeDados {
         }  catch (CannotGetJdbcConnectionException ex) {
             //Logger.getLogger(ControllerDashboard.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Nao foi encontrado um banco de dados local.");
-            logger.gravarDadosLog("ERRO", "Não foi possivel inserir dados no banco de dados local." + ex.getMessage());
+            logger.gravarDadosLog("ERRO","INSERT" , "Não foi possivel inserir dados no banco de dados local." + Arrays.toString(ex.getStackTrace()));
             erro = true;
         }
         String hardware = "";
@@ -259,7 +263,7 @@ public class ControllerBancoDeDados {
                 break;
         }
         if(!erro){
-            logger.gravarDadosLog("INFO", "O dado coletado de " + hardware + "(" + porcentagem +  "%) foi registrado com sucesso no banco de dados local.");
+            logger.gravarDadosLog("INFO", "INSERT" , "O dado coletado de " + hardware + "(" + porcentagem +  "%) foi registrado com sucesso no banco de dados local.");
         }
         erro = false;
     }
@@ -271,7 +275,7 @@ public class ControllerBancoDeDados {
         }  catch (CannotGetJdbcConnectionException ex) {
             //Logger.getLogger(ControllerDashboard.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Nao foi encontrado um banco de dados local.");
-            logger.gravarDadosLog("ERRO", "Não foi possivel inserir dados no banco de dados local." + Arrays.toString(ex.getStackTrace()));
+            logger.gravarDadosLog("ERRO", "INSERT" ,"Não foi possivel inserir dados no banco de dados local." + Arrays.toString(ex.getStackTrace()));
             erro = true;
         }
         String hardware = "";
@@ -296,7 +300,7 @@ public class ControllerBancoDeDados {
                 break;
         }
         if(!erro){
-            logger.gravarDadosLog("INFO", "O dado coletado de " + hardware + "(" + porcentagem +  "%) foi registrado com sucesso no banco de dados local.");
+            logger.gravarDadosLog("INFO", "INSERT" , "O dado coletado de " + hardware + "(" + porcentagem +  "%) foi registrado com sucesso no banco de dados local.");
         }
         erro = false;
     }
@@ -307,11 +311,11 @@ public class ControllerBancoDeDados {
         try{
             con.update("insert into acesso(fkComputador, fkUsuario) values (?,?)", idComputador, idUsuario);  
         } catch (CannotGetJdbcConnectionException ex) {
-            logger.gravarDadosLog("ERRO", "Não foi possivel realizar insert do acesso do usuário." + Arrays.toString(ex.getStackTrace()));
+            logger.gravarDadosLog("ERRO","INSERT" , "Não foi possivel realizar insert do acesso do usuário." + Arrays.toString(ex.getStackTrace()));
             erro = true;
         }
         if(!erro){
-            logger.gravarDadosLog("INFO", "Registro do acesso foi realizado com sucesso.");
+            logger.gravarDadosLog("INFO", "INSERT" , "Registro do acesso foi realizado com sucesso.");
         }
     }
 }

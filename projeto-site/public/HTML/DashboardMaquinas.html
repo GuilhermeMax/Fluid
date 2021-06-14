@@ -33,11 +33,11 @@
             </div>
 
             <ul>
-                <li><a href="DashboardHome.html"><button><i class="fas fa-home"></i>Home</button></a></li>
-                <li id="cadastrar"><a href="DashboardCadastro.html"><button><i class="fas fa-user-plus"></i>Cadastrar</button></a></li>
-                <li><a href="DashboardMaquinas.html"><button><i class="fas fa-chart-bar"></i>Dashboard</button></a></li>                
-                <li><a href="#"><button><i class="far fa-user"></i>Perfil</button></a></li>
-                <li><button onclick="logoff()"><i class="far fa-times-circle"></i>Sair</button></li>
+                <li><a href="DashboardHome.html"><button><i class="fas fa-home"></i><span>Home</span></button></a></li>
+                <li id="cadastrar"><a href="DashboardCadastro.html"><button><i class="fas fa-user-plus"></i><span>Cadastrar</span></button></a></li>
+                <li><a href="DashboardMaquinas.html"><button><i class="fas fa-chart-bar"></i><span>Dashboard</span></button></a></li>                
+                <li><a href="#"><button><i class="far fa-user"></i><span>Perfil</span></button></a></li>
+                <li><button onclick="logoff()"><i class="far fa-times-circle"></i><span>Sair</span></button></li>
             </ul>
         </div>
 
@@ -51,6 +51,7 @@
             <div class="container-info-maquinas">
                 <h1>Selecione uma máquina:</h1>
                 <select name="" id="selectMaquina" onchange="mapearDiscos()">
+                    <option value="">-- Selecione uma máquina --</option>
                 </select>
 
                 <div class="card-hostname">
@@ -65,11 +66,11 @@
                     <div class="container-info-historico">
                         <div class="container-label">
                             <label for=""><b>Última edição: </b></label>
-                            <label for="" id="lastEdit">20/05/2021</label>
+                            <label for="" id="lastEdit"></label>
                         </div>
                         <div class="container-label">
                             <label for=""><b>Último usuário ativo: </b></label>
-                            <label for="" id="lastUser">usuarioX</label>
+                            <label for="" id="lastUser"></label>
                         </div>
                     </div>
                 </div>
@@ -82,23 +83,23 @@
                     <div class="container-card-hardwarer">
                         <div class="card-hardware" id="card-cpu" onclick="trocar_grafico(this.id)">
                             <h1>CPU</h1>
-                            <label for="" id="cpuMedia">70%</label>
+                            <label for="" id="cpuMedia"></label>
                             <h3>Média de uso</h3>
                         </div>
                         <div class="card-hardware" id="card-gpu" onclick="trocar_grafico(this.id)">
                             <h1>GPU</h1>
-                            <label for="">90ºC</label>
+                            <label for="" id="gpuMedia"></label>
                             <h3>Temperatura média</h3>
                         </div>
                         <div class="card-hardware" id="card-ram" onclick="trocar_grafico(this.id)">
                             <h1>RAM</h1>
-                            <label for="">70%</label>
+                            <label for="" id="ramMedia"></label>
                             <h3>Média de uso</h3>
                         </div>
                         <div class="card-hardware" id="card-disco" onclick="trocar_grafico(this.id)">
-                            <select name="" id="selectDiscos">
+                            <select name="" id="selectDiscos" onchange="obterDadosGraficoPrimeiraVezDisco(selectMaquina.value, selectDiscos.value)">
                             </select>
-                            <label for="">70%</label>
+                            <label for="" id="discoMedia"></label>
                             <h3>Espaço em uso</h3>
                         </div>
                     </div>
@@ -116,7 +117,7 @@
                     </div>
 
                     <div class="container-canva-hardware" id="canva-disco">
-                        <canvas height="110vh"></canvas>
+                        <canvas height="110vh" id="graficoDisco"></canvas>
                     </div>
                 </div>
             </div>
@@ -174,6 +175,8 @@
 
     window.onload = mapearComputadores();
 
+    var hostnameLbl;
+
     function mapearComputadores() {
         //aguardar();
         fetch(`/usuarios/listarComputadores`)
@@ -206,7 +209,7 @@
                 if (resposta.ok) {
                     resposta.json().then(function (resposta) {
 
-                        lastUser.innerHTML = resposta[0].nomeUsuario;
+                        lastUser.innerHTML = resposta[0].nome;
 
                     });
                 } else {
@@ -221,7 +224,7 @@
 
     function mapearDiscos() {
         selectDiscos.innerHTML = "";
-        fetch(`/usuarios/listarDiscos/${selectMaquina.value}`)
+        fetch(`/usuarios/listarDadosDisco/${selectMaquina.value}`)
             .then(resposta => {
 
                 if (resposta.ok) {
@@ -232,13 +235,22 @@
                                 var hardware = resposta[aux].hardware;
                                 selectDiscos.innerHTML += `<option value="${hardware}">Disco ${aux + 1}</option>`;
                             }
-                            else if(resposta[aux].hardware != resposta[aux-1].hardware && resposta[aux].hardware != resposta[aux+1].hardware) {
+                            else if(resposta[1].hardware != resposta[0].hardware && resposta[1].hardware != resposta[2].hardware) {
                                 var hardware = resposta[aux].hardware;
                                 selectDiscos.innerHTML += `<option value="${hardware}">Disco ${aux + 1}</option>`;
                             }
                         }
                         retornarAcesso();
+                        retornarData();
                         mediaCPU();
+                        mediaRAM();
+                        mediaGPU();
+                        mediaDisco();
+                        obterDadosGraficoPrimeiraVezCPU(selectMaquina.value);
+                        obterDadosGraficoPrimeiraVezGPU(selectMaquina.value);
+                        obterDadosGraficoPrimeiraVezRAM(selectMaquina.value);
+                        obterDadosGraficoPrimeiraVezDisco(selectMaquina.value, selectDiscos.value);
+                        mudarHostname();
                     });
                 } else {
 
@@ -250,6 +262,25 @@
             });
     }
 
+    function mudarHostname() {
+        fetch(`/usuarios/capturarHostname/${selectMaquina.value}`)
+        .then(resposta => {
+
+            if (resposta.ok) {
+                resposta.json().then(function (resposta) {
+
+                    hostnameLabel.innerHTML = resposta[0].hostname;
+                });
+            } else {
+
+                console.error('Nenhum dado encontrado ou erro na API');
+            }
+        })
+        .catch(function (error) {
+            console.error(`Erro na obtenção dos dados do setor p/ gráfico: ${error.message}`);
+        });
+    }
+
     function mediaCPU() {
         fetch(`/usuarios/mediaCPU/${selectMaquina.value}`)
             .then(resposta => {
@@ -257,7 +288,117 @@
                 if (resposta.ok) {
                     resposta.json().then(function (resposta) {
 
-                        cpuMedia.innerHTML = `${resposta[0].media}%`;
+                        if (resposta[0].media == null) {
+                            cpuMedia.innerHTML = `N/A`;
+                            cpuMedia.style.color = `red`;
+                        }
+                        else {
+                            cpuMedia.innerHTML = `${resposta[0].media}%`;
+                            cpuMedia.style.color = `black`;
+                        }
+                    });
+                } else {
+
+                    console.error('Nenhum dado encontrado ou erro na API');
+                }
+
+            })
+            .catch(function (error) {
+                console.error(`Erro na obtenção dos dados: ${error.message}`);
+            });
+    }
+
+    function mediaRAM() {
+        fetch(`/usuarios/mediaRAM/${selectMaquina.value}`)
+            .then(resposta => {
+
+                if (resposta.ok) {
+                    resposta.json().then(function (resposta) {
+
+                        if (resposta[0].media == null) {
+                            ramMedia.innerHTML = `N/A`;
+                            ramMedia.style.color = `red`;
+                        }
+                        else {
+                            ramMedia.innerHTML = `${resposta[0].media}%`;
+                            ramMedia.style.color = `black`;
+                        }
+                    });
+                } else {
+
+                    console.error('Nenhum dado encontrado ou erro na API');
+                }
+
+            })
+            .catch(function (error) {
+                console.error(`Erro na obtenção dos dados: ${error.message}`);
+            });
+    }
+
+    function mediaGPU() {
+        fetch(`/usuarios/mediaGPU/${selectMaquina.value}`)
+            .then(resposta => {
+
+                if (resposta.ok) {
+                    resposta.json().then(function (resposta) {
+
+                        if (resposta[0].media == null) {
+                            gpuMedia.innerHTML = `N/A`;
+                            gpuMedia.style.color = `red`;
+                        }
+                        else {
+                            gpuMedia.innerHTML = `${resposta[0].media}ºC`;
+                            gpuMedia.style.color = `black`;
+                        }
+
+                    });
+                } else {
+
+                    console.error('Nenhum dado encontrado ou erro na API');
+                }
+
+            })
+            .catch(function (error) {
+                console.error(`Erro na obtenção dos dados: ${error.message}`);
+            });
+    }
+
+    function mediaDisco() {
+        fetch(`/usuarios/mediaDISCO/${selectMaquina.value}/${selectDiscos.value}`)
+            .then(resposta => {
+
+                if (resposta.ok) {
+                    resposta.json().then(function (resposta) {
+
+                        if (resposta[0].media == null) {
+                            discoMedia.innerHTML = `N/A`;
+                            discoMedia.style.color = `red`;
+                        }
+                        else {
+                            discoMedia.innerHTML = `${resposta[0].media}%`;
+                            discoMedia.style.color = `black`;
+                        }
+
+                    });
+                } else {
+
+                    console.error('Nenhum dado encontrado ou erro na API');
+                }
+
+            })
+            .catch(function (error) {
+                console.error(`Erro na obtenção dos dados: ${error.message}`);
+            });
+    }
+
+    function retornarData() {
+        fetch(`/usuarios/acessoTime/${selectMaquina.value}`)
+            .then(resposta => {
+
+                if (resposta.ok) {
+                    resposta.json().then(function (resposta) {
+
+                        lastEdit.innerHTML = resposta[0].tempo;
 
                     });
                 } else {
@@ -285,6 +426,7 @@
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             title: {
                 display: true,
                 text: 'Gráfico de histórico de temperatura da GPU'
@@ -315,455 +457,499 @@
             }
         }
     };
-    //uso RAM
-    var config_usoRAM = {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Uso de memória RAM',
-                backgroundColor: '#a738e8',
-                borderColor: '#a738e8',
-                data: [],
-                fill: true,
-            }]
-        },
-        options: {
+
+    var corTemp = '#a738e8';
+    var corUso = '#a738e8';
+
+    let proximaAtualizacao;
+
+    // neste JSON tem que ser 'labels', 'datasets' etc, 
+    // porque é o padrão do Chart.js
+
+    // altere aqui as configurações do gráfico
+    // (tamanhos, cores, textos, etc)
+    function configurarGraficoCPU() {
+        var configuracoes = {
             responsive: true,
+            animation: { duration: 500 },
+            hoverMode: 'index',
+            stacked: false,
             title: {
                 display: true,
-                text: 'Gráfico de histórico de % de uso de RAM'
-            },
-            tooltips: {
-                mode: 'index',
-                intersect: false,
-            },
-            hover: {
-                mode: 'nearest',
-                intersect: true
+                text: 'Histórico recente de CPU por porcentagem de uso'
             },
             scales: {
-                xAxes: [{
-                    display: true,
-                    scaleLabel: {
-                        display: true,
-                        labelString: 'Horário da Leitura'
-                    }
-                }],
                 yAxes: [{
+                    type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
                     display: true,
-                    scaleLabel: {
-                        display: true,
-                        labelString: '% de uso'
-                    }
-                }]
+                    position: 'left',
+                    id: 'y-usoPorcentagem'
+                }],
             }
+        };
+
+        return configuracoes;
+    }
+
+    // altere aqui como os dados serão exibidos
+    // e como são recuperados do BackEnd
+    function obterDadosGraficoPrimeiraVezCPU(fkComputador) {
+
+        if (proximaAtualizacao != undefined) {
+            clearTimeout(proximaAtualizacao);
         }
-    };
-    //uso CPU
-    var config_usoCPU = {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: '% de uso da CPU',
-                backgroundColor: '#a738e8',
-                borderColor: '#a738e8',
-                data: [],
-                fill: true,
-            }]
-        },
-        options: {
+        fetch(`/usuarios/dadosGeralCPU/${fkComputador}`, { cache: 'no-store' }).then(function (response) {
+            if (response.ok) {
+                response.json().then(function (resposta) {
+                    console.log(`Dados recebidos: ${JSON.stringify(resposta)}`);
+                    resposta.reverse();
+
+                        var dados = {
+                            labels: [],
+                            datasets: [
+                            {
+                                yAxisID: 'y-usoPorcentagem',
+                                label: 'Uso em %',
+                                borderColor: corTemp,
+                                backgroundColor: corTemp,
+                                fill: true,
+                                data: [],
+                            }
+                            ]
+                        };
+
+                        for (i = 0; i < resposta.length; i++) {
+                            var registro = resposta[i];
+                            dados.labels.push(registro.dataRegistro_grafico);
+                            dados.datasets[0].data.push(registro.usoEmPorcentagem);
+                        }
+                    console.log(JSON.stringify(dados));
+                    plotarGrafico(dados, fkComputador);
+                });
+            } else {
+                console.error('Nenhum dado encontrado ou erro na API');
+            }
+        })
+            .catch(function (error) {
+                console.error(`Erro na obtenção dos dados p/ gráfico: ${error.message}`);
+            });
+
+    }
+
+    // só mexer se quiser alterar o tempo de atualização
+    // ou se souber o que está fazendo!
+    function atualizarGraficoCPU(fkComputador, dados) {
+
+        fetch(`/usuarios/tempo-realCPU/${fkComputador}`, { cache: 'no-store' }).then(function (response) {
+            console.log("Estou tentando pegar fkComputador = ", fkComputador)
+            if (response.ok) {
+                response.json().then(function (novoRegistro) {
+
+                    console.log(`Dados recebidos: ${JSON.stringify(novoRegistro)}`);
+                    console.log(`Dados atuais do gráfico: ${dados}`);
+
+                    // tirando e colocando valores no gráfico
+                    dados.labels.shift(); // apagar o primeiro
+                    dados.labels.push(novoRegistro.dataRegistro_grafico); // incluir um novo dataRegistro
+                    dados.datasets[0].data.shift();  // apagar o primeiro de uso
+                    dados.datasets[0].data.push(novoRegistro.usoEmPorcentagem); // incluir uma nova leitura de temperatura
+
+                    console.log("meu computador é o " + fkComputador)
+
+                    window.grafico_linhaCPU.update();
+
+
+                    proximaAtualizacao = setTimeout(() => atualizarGraficoCPU(fkComputador, dados), 60000);
+                });
+            } else {
+                console.error('Nenhum dado encontrado ou erro na API');
+                proximaAtualizacao = setTimeout(() => atualizarGraficoCPU(fkComputador, dados), 5000);
+            }
+        })
+            .catch(function (error) {
+                console.error(`Erro na obtenção dos dados p/ gráfico: ${error.message}`);
+            });
+
+    }
+
+    // function verificarDados(fkComputador, dados) {
+    //     fetch(`/usuarios/dadosRecentesCPU/${fkComputador}`)
+    //     .then(resposta => {
+    //         if(resposta.ok) {
+    //             console.log(resposta.json());
+    //             setTimeout(() => atualizarGrafico(fkComputador, dados), 2000);
+    //         }
+    //         else {
+    //             setTimeout(() => verificarDados(fkComputador, dados), 2000);
+    //         }
+    //     })
+    // }
+
+    // só altere aqui se souber o que está fazendo!
+    function plotarGrafico(dados, fkComputador) {
+        console.log('iniciando plotagem do gráfico...');
+
+        var atx = document.getElementById('graficoCPU').getContext('2d');
+        window.grafico_linhaCPU = Chart.Line(atx, {
+            data: dados,
+            options: configurarGraficoCPU()
+        });
+
+        setTimeout(() => atualizarGraficoCPU(fkComputador, dados), 60000);
+    }
+
+    // CAPTURANDO DADOS GPU
+
+    function atualizarGraficoGPU(fkComputador, dados) {
+
+    fetch(`/usuarios/tempo-realGPU/${fkComputador}`, { cache: 'no-store' }).then(function (response) {
+        console.log("Estou tentando pegar fkComputador = ", fkComputador)
+        if (response.ok) {
+            response.json().then(function (novoRegistro) {
+
+                console.log(`Dados recebidos: ${JSON.stringify(novoRegistro)}`);
+                console.log(`Dados atuais do gráfico: ${dados}`);
+
+                // tirando e colocando valores no gráfico
+                dados.labels.shift(); // apagar o primeiro
+                dados.labels.push(novoRegistro.dataRegistro_grafico); // incluir um novo dataRegistro
+                dados.datasets[0].data.shift();  // apagar o primeiro de uso
+                dados.datasets[0].data.push(novoRegistro.temperatura); // incluir uma nova leitura de temperatura
+
+                console.log("meu computador é o " + fkComputador)
+
+                window.grafico_linhaGPU.update();
+
+
+                proximaAtualizacao = setTimeout(() => atualizarGraficoGPU(fkComputador, dados), 60000);
+            });
+        } else {
+            console.error('Nenhum dado encontrado ou erro na API');
+            proximaAtualizacao = setTimeout(() => atualizarGraficoGPU(fkComputador, dados), 5000);
+        }
+    })
+        .catch(function (error) {
+            console.error(`Erro na obtenção dos dados p/ gráfico: ${error.message}`);
+        });
+    }
+
+    function configurarGraficoGPU() {
+        var configuracoes = {
             responsive: true,
-            maintainAspectRatio: false,
+            animation: { duration: 500 },
+            hoverMode: 'index',
+            stacked: false,
             title: {
                 display: true,
-                text: 'Gráfico de histórico de % de uso da CPU'
-            },
-            tooltips: {
-                mode: 'index',
-                intersect: false,
-            },
-            hover: {
-                mode: 'nearest',
-                intersect: true
+                text: 'Histórico recente da temperatura da GPU'
             },
             scales: {
-                xAxes: [{
+                yAxes: [{
+                    type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
                     display: true,
+                    position: 'left',
+                    id: 'y-temperatura',
                     scaleLabel: {
                         display: true,
-                        labelString: 'Horário da Leitura'
+                        labelString: 'ºC'
                     }
                 }],
-                yAxes: [{
-                    display: true,
-                    scaleLabel: {
-                        display: true,
-                        labelString: '% de uso'
+            }
+        };
+
+        return configuracoes;
+    }
+
+    function obterDadosGraficoPrimeiraVezGPU(fkComputador) {
+
+    if (proximaAtualizacao != undefined) {
+        clearTimeout(proximaAtualizacao);
+    }
+
+    fetch(`/usuarios/dadosGeralGPU/${fkComputador}`, { cache: 'no-store' }).then(function (response) {
+        if (response.ok) {
+            response.json().then(function (resposta) {
+                console.log(`Dados recebidos: ${JSON.stringify(resposta)}`);
+                resposta.reverse();
+
+                    var dados = {
+                        labels: [],
+                        datasets: [
+                        {
+                            yAxisID: 'y-temperatura',
+                            label: 'Temperatura',
+                            borderColor: corTemp,
+                            backgroundColor: corTemp,
+                            fill: true,
+                            data: []
+                        }
+                        ]
+                    };
+
+                    for (i = 0; i < resposta.length; i++) {
+                        var registro = resposta[i];
+                        dados.labels.push(registro.dataRegistro_grafico);
+                        dados.datasets[0].data.push(registro.temperatura);
                     }
-                }]
-            }
+                console.log(JSON.stringify(dados));
+                plotarGraficoGPU(dados, fkComputador);
+            });
+        } else {
+            console.error('Nenhum dado encontrado ou erro na API');
         }
-    };
-
-    //Temp
-    function sortearTemperatura() {
-        var limiteMin = 30;
-        var limiteMax = 80;
-        // var minimoAbsoluto = Math.abs(limiteMin);
-        return (Math.random() * (limiteMax - limiteMin) + limiteMin).toFixed(1);
-    }
-
-
-    function recuperarDadosIniciais_usoRAM() {
-
-        // esse "registros" será recuperado do backend futuramente
-        var registros = [
-            {
-                momento: '00:03:42',
-                leitura: sortearTemperatura()
-            },
-            {
-                momento: '00:03:52',
-                leitura: sortearTemperatura()
-            },
-            {
-                momento: '00:04:02',
-                leitura: sortearTemperatura()
-            },
-            {
-                momento: '00:04:12',
-                leitura: sortearTemperatura()
-            },
-            {
-                momento: '00:04:22',
-                leitura: sortearTemperatura()
-            },
-            {
-                momento: '00:04:32',
-                leitura: sortearTemperatura()
-            },
-            {
-                momento: '00:04:42',
-                leitura: sortearTemperatura()
-            }
-        ];
-
-        var contador = 0;
-
-        // registros.length é a quantidade de itens em "registros"
-        while (contador < registros.length) {
-
-            config_usoRAM.data.labels.push(registros[contador].momento);  // incluir um novo momento
-            config_usoRAM.data.datasets[0].data.push(registros[contador].leitura);  // incluir uma nova leitura
-
-            contador++;
-        }
+    })
+        .catch(function (error) {
+            console.error(`Erro na obtenção dos dados p/ gráfico: ${error.message}`);
+        });
 
     }
 
-    //uso RAM
-    function sortearUsoRAM() {
-        min = 10;
-        max = 99;
-
-        let random = Math.floor(Math.random() * (max - min + 1) + min);
-
-        return random
-    }
-
-     //uso CPU
-     function sortearUsoCPU() {
-        min = 10;
-        max = 99;
-
-        let random = Math.floor(Math.random() * (max - min + 1) + min);
-
-        return random
-    }
-
-    function recuperarDadosIniciais_tempGPU() {
-
-        // esse "registros" será recuperado do backend futuramente
-        var registros = [
-            {
-                momento: '00:03:42',
-                leitura: sortearTemperatura()
-            },
-            {
-                momento: '00:03:52',
-                leitura: sortearTemperatura()
-            },
-            {
-                momento: '00:04:02',
-                leitura: sortearTemperatura()
-            },
-            {
-                momento: '00:04:12',
-                leitura: sortearTemperatura()
-            },
-            {
-                momento: '00:04:22',
-                leitura: sortearTemperatura()
-            },
-            {
-                momento: '00:04:32',
-                leitura: sortearTemperatura()
-            },
-            {
-                momento: '00:04:42',
-                leitura: sortearTemperatura()
-            }
-        ];
-
-        var contador = 0;
-
-        // registros.length é a quantidade de itens em "registros"
-        while (contador < registros.length) {
-
-            config_tempGPU.data.labels.push(registros[contador].momento);  // incluir um novo momento
-            config_tempGPU.data.datasets[0].data.push(registros[contador].leitura);  // incluir uma nova leitura
-
-            contador++;
-        }
-
-    }
-
-    function recuperarDadosIniciais_usoCPU() {
-
-    // esse "registros" será recuperado do backend futuramente
-    var registros = [
-        {
-            momento: '00:03:42',
-            leitura: sortearUsoCPU()
-        },
-        {
-            momento: '00:03:52',
-            leitura: sortearUsoCPU()
-        },
-        {
-            momento: '00:04:02',
-            leitura: sortearUsoCPU()
-        },
-        {
-            momento: '00:04:12',
-            leitura: sortearUsoCPU()
-        },
-        {
-            momento: '00:04:22',
-            leitura: sortearUsoCPU()
-        },
-        {
-            momento: '00:04:32',
-            leitura: sortearUsoCPU()
-        },
-        {
-            momento: '00:04:42',
-            leitura: sortearUsoCPU()
-        }
-    ];
-
-    var contador = 0;
-
-    // registros.length é a quantidade de itens em "registros"
-    while (contador < registros.length) {
-
-        config_usoCPU.data.labels.push(registros[contador].momento);  // incluir um novo momento
-        config_usoCPU.data.datasets[0].data.push(registros[contador].leitura);  // incluir uma nova leitura
-
-        contador++;
-    }
-
-    }
-
-    //atualização de dados:
-    //USO RAM
-
-    var divisor1 = 0;
-    var total1 = 0;
-    var armazenador1 = [];
-
-    function receberNovasLeituras_usoRAM() {
-        setTimeout(() => {
-
-            // esses "agora" etc até "momentos" serão desnecessários quando usarmos o backend futuramente
-            var agora = new Date();
-            var hora = agora.getHours();
-            var minuto = agora.getMinutes();
-            var segundo = agora.getSeconds();
-            var momento = `${hora > 9 ? '' : '0'}${hora}:${minuto > 9 ? '' : '0'}${minuto}:${segundo > 9 ? '' : '0'}${segundo}`;
-
-            // esse "novoRegistro" será recuperado do backend futuramente
-            var novoRegistro = {
-                momento: momento,
-                leitura: sortearUsoRAM()
-            };
-
-            // tirando e colocando valores no gráfico
-            config_usoRAM.data.labels.shift(); // apagar o primeiro
-            config_usoRAM.data.labels.push(novoRegistro.momento); // incluir um novo momento
-            config_usoRAM.data.datasets[0].data.shift();  // apagar o primeiro
-            config_usoRAM.data.datasets[0].data.push(novoRegistro.leitura); // incluir uma nova leitura
-
-            // Atualiza o gráfico
-            window.graficoLinhaUsoRAM.update();
-
-            armazenador1.push(novoRegistro.leitura);
-            total1 += parseInt(novoRegistro.leitura);
-            divisor1++;
-
-            // agendar a chamada da mesma função para daqui a 7 segundos
-            receberNovasLeituras_usoRAM();
-
-            // for(var i = 0; i < total[i]; i++) {
-            //     total[i];
-            // }
-            // document.getElementById('media_usoRAM').innerHTML = (total1 / divisor1).toFixed(2);
-            // document.getElementById('max_usoRAM').innerHTML = max(armazenador1);
-
-        }, 1000); // 7000 ms -> 7 segundos
-
-        function max(input) {
-        if (toString.call(input) !== "[object Array]") {
-            return false;
-        }
-        return Math.max.apply(null, input);
-        }
-    }
-
-    // TEMP GPU
-    var divisor2 = 0;
-    var total2 = 0;
-    var armazenador2 = [];
-
-    function receberNovasLeituras_tempGPU() {
-        setTimeout(() => {
-
-            // esses "agora" etc até "momentos" serão desnecessários quando usarmos o backend futuramente
-            var agora = new Date();
-            var hora = agora.getHours();
-            var minuto = agora.getMinutes();
-            var segundo = agora.getSeconds();
-            var momento = `${hora > 9 ? '' : '0'}${hora}:${minuto > 9 ? '' : '0'}${minuto}:${segundo > 9 ? '' : '0'}${segundo}`;
-
-            // esse "novoRegistro" será recuperado do backend futuramente
-            var novoRegistro = {
-                momento: momento,
-                leitura: sortearTemperatura()
-            };
-
-            // tirando e colocando valores no gráfico
-            config_tempGPU.data.labels.shift(); // apagar o primeiro
-            config_tempGPU.data.labels.push(novoRegistro.momento); // incluir um novo momento
-            config_tempGPU.data.datasets[0].data.shift();  // apagar o primeiro
-            config_tempGPU.data.datasets[0].data.push(novoRegistro.leitura); // incluir uma nova leitura
-
-            // Atualiza o gráfico
-            window.graficoLinhaTempGPU.update();
-
-            armazenador2.push(novoRegistro.leitura);
-            total2 += parseInt(novoRegistro.leitura);
-            divisor2++;
-
-            // agendar a chamada da mesma função para daqui a 7 segundos
-            receberNovasLeituras_tempGPU();
-
-            // document.getElementById('media_TempGPU').innerHTML = (total2 / divisor2).toFixed(2);
-            // document.getElementById('max_TempGPU').innerHTML = max(armazenador2);
-
-        }, 1000); // 7000 ms -> 7 segundos
-
-        function max(input) {
-        if (toString.call(input) !== "[object Array]") {
-            return false;
-        }
-        return Math.max.apply(null, input);
-        }
-    }
-
-    //USO RAM
-
-    var divisor3 = 0;
-    var total3 = 0;
-    var armazenador3 = [];
-
-    function receberNovasLeituras_usoCPU() {
-        setTimeout(() => {
-
-            // esses "agora" etc até "momentos" serão desnecessários quando usarmos o backend futuramente
-            var agora = new Date();
-            var hora = agora.getHours();
-            var minuto = agora.getMinutes();
-            var segundo = agora.getSeconds();
-            var momento = `${hora > 9 ? '' : '0'}${hora}:${minuto > 9 ? '' : '0'}${minuto}:${segundo > 9 ? '' : '0'}${segundo}`;
-
-            // esse "novoRegistro" será recuperado do backend futuramente
-            var novoRegistro = {
-                momento: momento,
-                leitura: sortearUsoCPU()
-            };
-
-            // tirando e colocando valores no gráfico
-            config_usoCPU.data.labels.shift(); // apagar o primeiro
-            config_usoCPU.data.labels.push(novoRegistro.momento); // incluir um novo momento
-            config_usoCPU.data.datasets[0].data.shift();  // apagar o primeiro
-            config_usoCPU.data.datasets[0].data.push(novoRegistro.leitura); // incluir uma nova leitura
-
-            // Atualiza o gráfico
-            window.graficoLinhaUsoCPU.update();
-
-            armazenador3.push(novoRegistro.leitura);
-            total3 += parseInt(novoRegistro.leitura);
-            divisor3++;
-
-            // agendar a chamada da mesma função para daqui a 7 segundos
-            receberNovasLeituras_usoCPU();
-
-            // for(var i = 0; i < total[i]; i++) {
-            //     total[i];
-            // }
-            // document.getElementById('media_usoCPU').innerHTML = (total3 / divisor3).toFixed(2);
-            // document.getElementById('max_usoCPU').innerHTML = max(armazenador3);
-
-        }, 1000); // 7000 ms -> 7 segundos
-
-        function max(input) {
-        if (toString.call(input) !== "[object Array]") {
-            return false;
-        }
-        return Math.max.apply(null, input);
-        }
-    }
-
-    // plotar graficos
-
-    function plotarGrafico() {
-        // chamar os 7 últimos registros de leitura
-
-        recuperarDadosIniciais_usoRAM();
-        recuperarDadosIniciais_tempGPU();
-        recuperarDadosIniciais_usoCPU();
-
-        //Atualizar leituras
-
-        receberNovasLeituras_usoRAM();
-        receberNovasLeituras_tempGPU();
-        receberNovasLeituras_usoCPU();
-
-
-        // criação do gráfico na página
+    function plotarGraficoGPU(dados, fkComputador) {
+        console.log('iniciando plotagem do gráfico...');
 
         var atx = document.getElementById('graficoGPU').getContext('2d');
-        window.graficoLinhaTempGPU = new Chart(atx, config_tempGPU);
+        window.grafico_linhaGPU = Chart.Line(atx, {
+            data: dados,
+            options: configurarGraficoGPU()
+        });
 
-        var btx = document.getElementById('graficoRAM').getContext('2d');
-        window.graficoLinhaUsoRAM = new Chart(btx, config_usoRAM);
+        setTimeout(() => atualizarGraficoGPU(fkComputador, dados), 60000);
+    }
 
-        var ctx = document.getElementById('graficoCPU').getContext('2d');
-        window.graficoLinhaUsoCPU = new Chart(ctx, config_usoCPU);
+    // CAPTURANDO DADOS RAM
+
+    function atualizarGraficoRAM(fkComputador, dados) {
+
+        fetch(`/usuarios/tempo-realRAM/${fkComputador}`, { cache: 'no-store' }).then(function (response) {
+            console.log("Estou tentando pegar fkComputador = ", fkComputador)
+            if (response.ok) {
+                response.json().then(function (novoRegistro) {
+
+                    console.log(`Dados recebidos: ${JSON.stringify(novoRegistro)}`);
+                    console.log(`Dados atuais do gráfico: ${dados}`);
+
+                    // tirando e colocando valores no gráfico
+                    dados.labels.shift(); // apagar o primeiro
+                    dados.labels.push(novoRegistro.dataRegistro_grafico); // incluir um novo dataRegistro
+                    dados.datasets[0].data.shift();  // apagar o primeiro de uso
+                    dados.datasets[0].data.push(novoRegistro.usoEmPorcentagem); // incluir uma nova leitura de temperatura
+
+                    console.log("meu computador é o " + fkComputador)
+
+                    window.grafico_linhaGPU.update();
+
+
+                    proximaAtualizacao = setTimeout(() => atualizarGraficoRAM(fkComputador, dados), 60000);
+                });
+            } else {
+                console.error('Nenhum dado encontrado ou erro na API');
+                proximaAtualizacao = setTimeout(() => atualizarGraficoRAM(fkComputador, dados), 5000);
+            }
+        })
+        .catch(function (error) {
+            console.error(`Erro na obtenção dos dados p/ gráfico: ${error.message}`);
+        });
+    }
+
+    function configurarGraficoRAM() {
+        var configuracoes = {
+            responsive: true,
+            animation: { duration: 500 },
+            hoverMode: 'index',
+            stacked: false,
+            title: {
+                display: true,
+                text: 'Histórico recente da % de uso da RAM'
+            },
+            scales: {
+                yAxes: [{
+                    type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                    display: true,
+                    position: 'left',
+                    id: 'y-usoPorcentagem',
+                    scaleLabel: {
+                        display: true,
+                        labelString: '% de Uso'
+                    }
+                }],
+            }
+        };
+
+        return configuracoes;
+    }
+
+    function obterDadosGraficoPrimeiraVezRAM(fkComputador) {
+
+    if (proximaAtualizacao != undefined) {
+        clearTimeout(proximaAtualizacao);
+    }
+
+    fetch(`/usuarios/dadosGeralRAM/${fkComputador}`, { cache: 'no-store' }).then(function (response) {
+        if (response.ok) {
+            response.json().then(function (resposta) {
+                console.log(`Dados recebidos: ${JSON.stringify(resposta)}`);
+                resposta.reverse();
+
+                    var dados = {
+                        labels: [],
+                        datasets: [
+                        {
+                            yAxisID: 'y-usoPorcentagem',
+                            label: '% de Uso',
+                            borderColor: corTemp,
+                            backgroundColor: corTemp,
+                            fill: true,
+                            data: []
+                        }
+                        ]
+                    };
+
+                    for (i = 0; i < resposta.length; i++) {
+                        var registro = resposta[i];
+                        dados.labels.push(registro.dataRegistro_grafico);
+                        dados.datasets[0].data.push(registro.usoEmPorcentagem);
+                    }
+                console.log(JSON.stringify(dados));
+                plotarGraficoRAM(dados, fkComputador);
+            });
+        } else {
+            console.error('Nenhum dado encontrado ou erro na API');
+        }
+    })
+        .catch(function (error) {
+            console.error(`Erro na obtenção dos dados p/ gráfico: ${error.message}`);
+        });
 
     }
 
-    window.onload = plotarGrafico;
+    function plotarGraficoRAM(dados, fkComputador) {
+        console.log('iniciando plotagem do gráfico...');
+
+        var atx = document.getElementById('graficoRAM').getContext('2d');
+        window.grafico_linhaGPU = Chart.Line(atx, {
+            data: dados,
+            options: configurarGraficoRAM()
+        });
+
+        setTimeout(() => atualizarGraficoRAM(fkComputador, dados), 60000);
+    }
+
+    // CAPTURANDO DADOS DISCO
+
+    function atualizarGraficoDisco(fkComputador, dados, fkHardware) {
+
+    fetch(`/usuarios/tempo-realDisco/${fkComputador}/${fkHardware}`, { cache: 'no-store' }).then(function (response) {
+        console.log("Estou tentando pegar fkComputador = ", fkComputador)
+        if (response.ok) {
+            response.json().then(function (novoRegistro) {
+
+                console.log(`Dados recebidos: ${JSON.stringify(novoRegistro)}`);
+                console.log(`Dados atuais do gráfico: ${dados}`);
+
+                // tirando e colocando valores no gráfico
+                dados.labels.shift(); // apagar o primeiro
+                dados.labels.push(novoRegistro.dataRegistro_grafico); // incluir um novo dataRegistro
+                dados.datasets[0].data.shift();  // apagar o primeiro de uso
+                dados.datasets[0].data.push(novoRegistro.usoEmPorcentagem); // incluir uma nova leitura de temperatura
+
+                console.log("meu computador é o " + fkComputador)
+
+                window.grafico_linhaGPU.update();
+
+
+                proximaAtualizacao = setTimeout(() => atualizarGraficoDisco(fkComputador, dados, fkHardware), 60000);
+            });
+        } else {
+            console.error('Nenhum dado encontrado ou erro na API');
+            proximaAtualizacao = setTimeout(() => atualizarGraficoDisco(fkComputador, dados, fkHardware), 5000);
+        }
+    })
+    .catch(function (error) {
+        console.error(`Erro na obtenção dos dados p/ gráfico: ${error.message}`);
+    });
+    }
+
+    function configurarGraficoDisco() {
+    var configuracoes = {
+        responsive: true,
+        animation: { duration: 500 },
+        hoverMode: 'index',
+        stacked: false,
+        title: {
+            display: true,
+            text: 'Histórico recente da % de uso do Disco'
+        },
+        scales: {
+            yAxes: [{
+                type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                display: true,
+                position: 'left',
+                id: 'y-usoPorcentagem',
+                scaleLabel: {
+                    display: true,
+                    labelString: '% de Uso'
+                }
+            }],
+        }
+    };
+
+    return configuracoes;
+    }
+
+    function obterDadosGraficoPrimeiraVezDisco(fkComputador, fkHardware) {
+
+    if (proximaAtualizacao != undefined) {
+    clearTimeout(proximaAtualizacao);
+    }
+
+    fetch(`/usuarios/dadosGraficoDisco/${fkComputador}/${fkHardware}`, { cache: 'no-store' }).then(function (response) {
+    if (response.ok) {
+        response.json().then(function (resposta) {
+            console.log(`Dados recebidos: ${JSON.stringify(resposta)}`);
+            resposta.reverse();
+
+                var dados = {
+                    labels: [],
+                    datasets: [
+                    {
+                        yAxisID: 'y-usoPorcentagem',
+                        label: '% de Uso',
+                        borderColor: corTemp,
+                        backgroundColor: corTemp,
+                        fill: true,
+                        data: []
+                    }
+                    ]
+                };
+
+                for (i = 0; i < resposta.length; i++) {
+                    var registro = resposta[i];
+                    dados.labels.push(registro.dataRegistro_grafico);
+                    dados.datasets[0].data.push(registro.usoEmPorcentagem);
+                }
+            console.log(JSON.stringify(dados));
+            plotarGraficoDisco(dados, fkComputador, fkHardware);
+        });
+    } else {
+        console.error('Nenhum dado encontrado ou erro na API');
+    }
+    })
+    .catch(function (error) {
+        console.error(`Erro na obtenção dos dados p/ gráfico: ${error.message}`);
+    });
+
+    }
+
+    function plotarGraficoDisco(dados, fkComputador, fkHardware) {
+    console.log('iniciando plotagem do gráfico...');
+
+    var atx = document.getElementById('graficoDisco').getContext('2d');
+    window.grafico_linhaGPU = Chart.Line(atx, {
+        data: dados,
+        options: configurarGraficoDisco()
+    });
+
+    setTimeout(() => atualizarGraficoDisco(fkComputador, dados, fkHardware), 60000);
+    }
+
 </script>
